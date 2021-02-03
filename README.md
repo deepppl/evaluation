@@ -92,7 +92,7 @@ Then to evaluate DeepStan extensions, we consider two additional questions
 
 ### RQ1
 
-To compile all the examples of `example-models` (copied from https://github.com/stan-dev/example-models), you can use the bash scrip `test_example-models.sh`:
+To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash scrip `test_example-models.sh`:
 ```
 cd rq1
 ./test_example-models.sh

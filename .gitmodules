@@ -1,3 +1,6 @@
 [submodule "posteriordb"]
 	path = posteriordb
 	url = https://github.com/stan-dev/posteriordb.git
+[submodule "example-models"]
+	path = example-models
+	url = https://github.com/stan-dev/example-models

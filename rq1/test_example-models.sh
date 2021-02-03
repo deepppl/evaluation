@@ -5,7 +5,7 @@ function compile_all {
     mode=$2
     echo --- $backend $mode
     rm -f /tmp/out-$backend-$mode logs-$backend-$mode /tmp/err-$backend-$mode
-    find ../../example-models -name *.stan -exec bash ./compile.sh $backend $mode {} \;
+    find ../example-models -name *.stan -exec bash ./compile.sh $backend $mode {} \;
     echo
     echo Success:        `cat logs-$backend-$mode | grep ": 0" | wc -l`
     echo stanc failures: `cat logs-$backend-$mode | grep ": 1" | wc -l`
