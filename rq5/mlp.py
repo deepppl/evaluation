@@ -220,24 +220,24 @@ if __name__ == "__main__":
         for j, (imgs, lbls) in enumerate(train_loader, 0):
             # calculate the loss and take a gradient step
             loss = svi.step(
-                batch_size=batch_size,
-                nx=nx,
-                nh=nh,
-                ny=ny,
-                imgs=imgs,
-                labels=lbls + 1,
-                mlp=mlp,
+                {"batch_size": batch_size,
+                 "nx": nx,
+                 "nh": nh,
+                 "ny": ny,
+                 "imgs": imgs,
+                 "labels": lbls + 1,
+                 "mlp": mlp}
             )
             losses.append(loss)
-    posterior = svi.posterior(
+    posterior = svi.sample_posterior(
         posterior_size,
-        batch_size=batch_size,
-        nx=nx,
-        nh=nh,
-        ny=ny,
-        imgs=imgs,
-        labels=lbls + 1,
-        mlp=mlp,
+        {"batch_size": batch_size,
+         "nx": nx,
+         "nh": nh,
+         "ny": ny,
+         "imgs": imgs,
+         "labels": lbls + 1,
+         "mlp": mlp}
     )
     posterior = [p["mlp"] for p in posterior]
 
