@@ -147,6 +147,32 @@ def build_and_evaluate(
     )
 
 
+def train_and_evaluate_deepstan(
+    epochs, name, pair_star, svi, encoder, decoder, train_loader, test_loader
+):
+    for epoch in tqdm.tqdm(range(epochs)):  # loop over the dataset multiple times
+        for j, (imgs, _) in enumerate(train_loader, 0):
+            # calculate the loss and take a gradient step
+            k = len(imgs)
+            loss = svi.step({
+              "batch_size": k, 
+              "nz":nz, 
+              "x":imgs, 
+              "encoder":encoder,
+              "decoder":decoder
+            })
+    evaluate(encoder, name, pair_star, test_loader)
+
+
+def build_and_evaluate_deepstan(
+    epochs, name, builder, params, pair_star, train_loader, test_loader
+):
+    encoder, decoder = build_vae()
+    svi = builder(params)
+    train_and_evaluate_deepstan(
+        epochs, name, pair_star, svi, encoder, decoder, train_loader, test_loader
+    )
+
 def make_pair_table(labels):
     y = pd.get_dummies(labels)
     return y.dot(y.T)
@@ -197,7 +223,7 @@ if __name__ == "__main__":
     train_loader, test_loader = loadData(batch_size)
     pair_star = make_pair_table(test_loader.dataset.targets.data.numpy())
     params = {"lr": 0.01}
-    build_and_evaluate(
+    build_and_evaluate_deepstan(
         args.epochs,
         "DeepStanSVI",
         build_deep_stan_svi,
