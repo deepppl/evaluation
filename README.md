@@ -5,7 +5,7 @@
 The evaluation is based on posteriordb which listed as a submodule.
 First clone the depo with its submodule and install [posteriordb](https://github.com/stan-dev/posteriordb)
 ```
-git submodule init
+git submodule init && git submodule update
 pip install ./posteriordb/python
 ```
 
