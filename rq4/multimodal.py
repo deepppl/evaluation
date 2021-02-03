@@ -7,7 +7,8 @@ import seaborn as sns
 import pyro
 from pyro import distributions as dist
 from pyro import infer
-from pyro.infer import mcmc
+from pyro.infer import mcmc, Trace_ELBO
+from pyro.optim import Adam
 import tqdm
 
 import torch
@@ -15,14 +16,15 @@ from torch.distributions import constraints
 
 from cmdstanpy import CmdStanModel
 
-from stanpyro import dppl
+from stanpyro.dppl import PyroModel
+from stannumpyro.dppl import NumPyroModel
+import jax.random
 import time
 
 num_chains = 1
 iterations = 9000
 warmup = 500
 svi_steps = 70000
-
 
 StanName = "Stan(NUTS)"
 StanADVIName = "Stan(ADVI)"
@@ -43,9 +45,9 @@ model_code_guided = "multimodal_guide_model.stan"
 
 
 def deepstan_sampler(model_code):
-    model = dppl.NumpyroModel(model_code)
+    model = NumPyroModel(model_code)
     mcmc = model.mcmc(iterations // num_chains + warmup, warmup, num_chains)
-    mcmc.run()
+    mcmc.run(jax.random.PRNGKey(0), {})
     samples = pd.Series(mcmc.get_samples()["theta"], name=r"$\theta$")
     return samples
 
@@ -71,8 +73,9 @@ def stan_sampler_advi(model_code):
 
 
 def deepstan_svi_sampler(model_code):
-    model_guided = dppl.PyroModel(model_code)
-    svi = model_guided.svi()
+    model_guided = PyroModel(model_code)
+    optimizer = Adam({"lr": 0.005, "betas": (0.95, 0.999)})
+    svi = model_guided.svi(optimizer, Trace_ELBO())
     for step in tqdm.tqdm(range(svi_steps)):
         svi.step()
     samples = pd.Series(

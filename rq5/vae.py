@@ -172,7 +172,9 @@ def model_pyro(*, batch_size, nz, x, encoder, decoder):
 
 def build_deep_stan_svi(params):
     model = dppl.PyroModel(model_code)
-    svi = model.svi(params=params)
+    svi = model.svi(
+        optim=pyro.optim.Adam(params),
+        loss=pyro.infer.Trace_ELBO(),)
     return svi
 
 

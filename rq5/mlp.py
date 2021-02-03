@@ -212,7 +212,9 @@ if __name__ == "__main__":
     pyro.clear_param_store()
     mlp = build_mlp()
     model = dppl.PyroModel(model_code)
-    svi = model.svi(params={"lr": lr})
+    svi = model.svi(
+        optim=pyro.optim.Adam({"lr": lr}),
+        loss=pyro.infer.Trace_ELBO(),)
     losses = []
     for epoch in tqdm.tqdm(range(epochs)):  # loop over the dataset multiple times
         for j, (imgs, lbls) in enumerate(train_loader, 0):
