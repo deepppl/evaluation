@@ -123,7 +123,7 @@ python test_posteriordb.py --backend numpyro --mode comprehensive
 ```
 
 This will generate a csv file `YYMMDD_HHMM_numpyro_comprehensive.csv` containing a summary of the experiments.
-:warning: a keyboard interrupt only stops one example.
+:warning: A keyboard interrupt only stops one example.
 
 To run the reference Stan implementation:
 ```
