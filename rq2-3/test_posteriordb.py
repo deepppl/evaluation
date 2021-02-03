@@ -128,8 +128,6 @@ def run_pyro_model(*, posterior, backend, config):
         assert False, "Invalid backend (should be one of pyro, numpyro, or stan)"
 
 
-
-
 def run_stan_model(*, posterior, config):
     """
     Compile and run the stan model

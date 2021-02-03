@@ -14,8 +14,8 @@ data = posterior.data
 # model = PyroModel(stanfile, recompile=True, mode="mixed", compiler=["stanc.exe"])
 model = NumpyroModel(stanfile, recompile=True, mode="mixed", compiler=["stanc.exe"])
 mcmc = model.mcmc(
-    samples = 100,
-    warmups = 10, 
+    samples=100,
+    warmups=10,
     chains=1,
     thin=2,
 )
