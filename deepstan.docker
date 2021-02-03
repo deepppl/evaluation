@@ -1,0 +1,27 @@
+############################################################
+# Dockerfile to build DeepStan docker image
+# Build with `docker build -t deepstan -f deepstan.docker .`
+# Run with `docker run -ti --rm -v `pwd`:/home/opam/artifact deepstan bash`
+############################################################
+
+FROM ocaml/opam2:4.07
+USER opam
+
+RUN sudo apt-get -y update && \
+    sudo apt-get -y install \
+      git build-essential m4 unzip pkg-config libpcre3-dev mingw-w64 gcc wget gawk python3 python3-pip
+
+RUN opam switch create 4.07.0 && opam switch 4.07.0
+RUN opam pin -y -k git git+https://github.com/deepppl/stanc3.git
+
+COPY --chown=opam . /home/opam/evaluation
+
+WORKDIR /home/opam/evaluation
+
+RUN git submodule init
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+RUN pip3 install posteriordb/python
+RUN python3 /home/opam/.local/lib/python3.7/site-packages/cmdstanpy/install_cmdstan.py
+
+WORKDIR /home/opam/evaluation
