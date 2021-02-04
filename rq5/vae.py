@@ -86,7 +86,7 @@ def build_vae():
             self.softplus = nn.Softplus()
 
         def forward(self, x):
-            x = x.view((-1, nx))
+            x = x.view((-1, nx)).type(torch.FloatTensor)
             hidden = F.relu(self.lh(x))
             z_mu = self.lz_mu(hidden)
             z_sigma = self.softplus(self.lz_sigma(hidden))
@@ -154,13 +154,14 @@ def train_and_evaluate_deepstan(
         for j, (imgs, _) in enumerate(train_loader, 0):
             # calculate the loss and take a gradient step
             k = len(imgs)
-            loss = svi.step({
+            kwargs = svi.preprocess({
               "batch_size": k, 
               "nz":nz, 
               "x":imgs, 
               "encoder":encoder,
               "decoder":decoder
             })
+            loss = svi.step(kwargs)
     evaluate(encoder, name, pair_star, test_loader)
 
 

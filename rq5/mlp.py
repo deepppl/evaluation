@@ -116,6 +116,7 @@ def build_mlp():
             self.relu = torch.nn.ReLU()
 
         def forward(self, x):
+            x = x.type(torch.FloatTensor)
             h = self.relu(self.l1(x.view((-1, nx))))
             yhat = self.l2(h)
             return F.log_softmax(yhat, dim=-1)
@@ -219,15 +220,14 @@ if __name__ == "__main__":
     for epoch in tqdm.tqdm(range(epochs)):  # loop over the dataset multiple times
         for j, (imgs, lbls) in enumerate(train_loader, 0):
             # calculate the loss and take a gradient step
-            loss = svi.step(
-                {"batch_size": batch_size,
+            kwargs = svi.preprocess({"batch_size": batch_size,
                  "nx": nx,
                  "nh": nh,
                  "ny": ny,
                  "imgs": imgs,
                  "labels": lbls + 1,
-                 "mlp": mlp}
-            )
+                 "mlp": mlp})
+            loss = svi.step(kwargs)
             losses.append(loss)
     posterior = svi.sample_posterior(
         posterior_size,
