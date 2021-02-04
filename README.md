@@ -35,19 +35,21 @@ You can also follow the instruction of the dockerfile to install everything loca
 
 
 ### Compilation
-The file `coin.stan` contains the Stan code for a simple biased coin model.
+Let start with the simple eight schools example from Gelman et al (Bayesian Data Analysis: Sec. 5.5, 2003).
+The file `schools.stan` contains the Stan code of the model.
 To compile this example with both backend:
 ```
-stanc --pyro --o coin_pyro.py coin.stan
-stanc --numpyro --o coin_numpyro.py coin.stan
+stanc --numpyro --o schools_numpyro.py schools.stan
+stanc --pyro --o schools_pyro.py schools.stan
 ```
-The compiled code is in the files `coin_pyro.py` and `coin_numpyro.py`
+The compiled code is in the files `schools_numpyro.py` and `schools_pyro.py`. 
 
 
 ### Inference
 
-The compiler generates up to 5 functions:
-- `convert_inputs`: convert a dictionary of inputs to the correct names and type.
+The compiler generates up to 6 functions:
+- `convert_inputs`: convert a dictionary of inputs to the correct names and type
+- `transformed_data` (optional): proprocess the data
 - `model`: the probabilistic model
 - `guide` (optional): the guide for variational inference
 - `generated_quantities` (optional): generate one sample of the generated quantities
@@ -57,15 +59,26 @@ You can then use these functions to run (Num)Pyro inference algorithms.
 On the simple coin example:
 
 ```python
+import numpyro
 from numpyro.infer import MCMC, NUTS
-from coin_numpyro import convert_inputs, model
+from numpyro.diagnostics import print_summary
+import schools_numpyro as schools
 import jax.random
 
-data = {"N": 10, "x": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1]}
+data = {
+    "J": 8,
+    "y": [28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0],
+    "sigma": [15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0],
+}
 
-mcmc = MCMC(NUTS(model), 100, 100)
-mcmc.run(jax.random.PRNGKey(0), **convert_inputs(data))
-mcmc.print_summary()
+mcmc = MCMC(NUTS(schools.model), 100, 100)
+data = schools.convert_inputs(data)
+# inputs = schools.transformed_data(data)  # Not needed for this example
+mcmc.run(jax.random.PRNGKey(0), **data)
+samples = mcmc.get_samples()
+gen = schools.map_generated_quantities(mcmc.get_samples(), **data)
+samples.update(gen)
+print_summary(samples, group_by_chain=False)
 ```
 
 Alternatively, we provide a simplified python interface which compiles the stan files and run the inference.
@@ -74,9 +87,13 @@ Alternatively, we provide a simplified python interface which compiles the stan 
 from stannumpyro.dppl import NumPyroModel
 import jax.random
 
-data = {"N": 10, "x": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1]}
+data = {
+    "J": 8,
+    "y": [28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0],
+    "sigma": [15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0],
+}
 
-numpyro_model = NumPyroModel("coin.stan")
+numpyro_model = NumPyroModel("schools.stan")
 mcmc = numpyro_model.mcmc(samples=100, warmups=100)
 mcmc.run(jax.random.PRNGKey(0), data)
 print(mcmc.summary())
