@@ -45,37 +45,41 @@ The compiled code is in the files `coin_pyro.py` and `coin_numpyro.py`
 
 
 ### Inference
-To run the inference on a posteriordb model (for example eight_schools stored in PosteriorDB):
+
+The compiler generates up to 5 functions:
+- `convert_inputs`: convert a dictionary of inputs to the correct names and type.
+- `model`: the probabilistic model
+- `guide` (optional): the guide for variational inference
+- `generated_quantities` (optional): generate one sample of the generated quantities
+- `map_generated_quantities` (optional): generated multiple samples of the generated quantities
+
+You can then use these functions to run (Num)Pyro inference algorithms.
+On the simple coin example:
 
 ```python
-import os
-from posteriordb import PosteriorDatabase
+from numpyro.infer import MCMC, NUTS
+from coin_numpyro import convert_inputs, model
+import jax.random
+
+data = {"N": 10, "x": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1]}
+
+mcmc = MCMC(NUTS(model), 100, 100)
+mcmc.run(jax.random.PRNGKey(0), **convert_inputs(data))
+mcmc.print_summary()
+```
+
+Alternatively, we provide a simplified python interface which compiles the stan files and run the inference.
+
+```python
 from stannumpyro.dppl import NumPyroModel
 import jax.random
 
-pdb_path = os.path.abspath("posteriordb/posterior_database")
-my_pdb = PosteriorDatabase(pdb_path)
-posterior = my_pdb.posterior("eight_schools-eight_schools_centered")
-stanfile = posterior.model.code_file_path("stan")
-data = posterior.data
+data = {"N": 10, "x": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1]}
 
-model = NumPyroModel(stanfile)
-mcmc = model.mcmc(
-    samples=100,
-    warmups=10,
-    chains=1,
-    thin=2,
-)
-
-inputs = model.module.convert_inputs(data.values())
-mcmc.run(jax.random.PRNGKey(0), inputs)
-
+numpyro_model = NumPyroModel("coin.stan")
+mcmc = numpyro_model.mcmc(samples=100, warmups=100)
+mcmc.run(jax.random.PRNGKey(0), data)
 print(mcmc.summary())
-```
-
-Run this example with:
-```
-python eight_schools.py
 ```
 
 ------------------------------------------------------------------
