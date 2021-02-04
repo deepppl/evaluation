@@ -1,9 +1,7 @@
 import os
-import sys
 from posteriordb import PosteriorDatabase
-
-sys.path.append("stanc3")
-from runtimes.dppl import PyroModel, NumpyroModel
+from stannumpyro.dppl import NumPyroModel
+import jax.random
 
 pdb_path = os.path.abspath("posteriordb/posterior_database")
 my_pdb = PosteriorDatabase(pdb_path)
@@ -11,8 +9,7 @@ posterior = my_pdb.posterior("eight_schools-eight_schools_centered")
 stanfile = posterior.model.code_file_path("stan")
 data = posterior.data
 
-# model = PyroModel(stanfile, recompile=True, mode="mixed", compiler=["stanc.exe"])
-model = NumpyroModel(stanfile, recompile=True, mode="mixed", compiler=["stanc.exe"])
+model = NumPyroModel(stanfile)
 mcmc = model.mcmc(
     samples=100,
     warmups=10,
@@ -21,5 +18,6 @@ mcmc = model.mcmc(
 )
 
 inputs = model.module.convert_inputs(data.values())
-mcmc.run(**inputs)
+mcmc.run(jax.random.PRNGKey(0), inputs)
+
 print(mcmc.summary())
