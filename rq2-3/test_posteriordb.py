@@ -166,9 +166,10 @@ def compare(*, posterior, backend, mode, config):
     else:
         sm = run_pyro_model(posterior=posterior, backend=backend, config=config)
     sm["err"] = abs(sm["mean"] - sg["mean"])
+    sm["rel_err"] = sm["err"] / sg["std"]
     assert not sm.dropna().empty
     # perf_cmdstan condition: err > 0.0001 and (err / stdev) > 0.3
-    comp = sm[(sm["err"] > 0.0001) & (sm["err"] / sg["std"] > 0.3)].dropna()
+    comp = sm[(sm["err"] > 0.0001) & (sm["rel_err"] > 0.3)].dropna()
     if not comp.empty:
         logger.error(f"Failed {posterior.name}")
         raise ComparisonError(str(comp))
@@ -239,10 +240,13 @@ if __name__ == "__main__":
     pdb_path = os.path.join(pdb_root, "posterior_database")
     my_pdb = PosteriorDatabase(pdb_path)
 
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
     for i in range(args.runs):
 
         today = datetime.datetime.now()
-        logpath = f"{today.strftime('%y%m%d_%H%M')}_{args.backend}"
+        logpath = f"logs/{today.strftime('%y%m%d_%H%M')}_{args.backend}"
         if args.backend != "stan":
             logpath += f"_{args.mode}"
         logpath += f"_{i}.csv"
