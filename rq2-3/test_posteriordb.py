@@ -9,12 +9,12 @@ from dataclasses import dataclass, field
 from pandas import DataFrame, Series
 from posteriordb import PosteriorDatabase
 from os.path import splitext, basename
+from itertools import product
 from cmdstanpy import CmdStanModel
 
-from stannumpyro.dppl import NumPyroModel, _flatten_dict, compile
+from stannumpyro.dppl import NumPyroModel, compile
 from stanpyro.dppl import PyroModel
 import jax.random
-from functools import partial
 
 
 logger = logging.getLogger(__name__)
@@ -54,11 +54,6 @@ def valid_ref(pdb, name):
 
 
 def gold_summary(posterior):
-    """
-    Summary for pdb reference_draws
-    - Aggregate all chains and compute mean, std for all params
-    - Flatten results in a DataFrame
-    """
     samples = posterior.reference_draws()
     if isinstance(samples, list):
         # Multiple chains
@@ -70,9 +65,22 @@ def gold_summary(posterior):
         # Only one chain
         assert isinstance(samples, dict)
         res = samples
-    d_mean = _flatten_dict({k: numpy.mean(v, axis=0) for k, v in res.items()})
-    d_std = _flatten_dict({k: numpy.std(v, axis=0) for k, v in res.items()})
-    return DataFrame({"mean": Series(d_mean), "std": Series(d_std)})
+    res = {k: numpy.array(v) for k, v in res.items()}
+    summary_dict = numpyro.diagnostics.summary(res, group_by_chain=False)
+    columns = list(summary_dict.values())[0].keys()
+    index = []
+    rows = []
+    for name, stats_dict in summary_dict.items():
+        shape = stats_dict["mean"].shape
+        if len(shape) == 0:
+            index.append(name)
+            rows.append(stats_dict.values())
+        else:
+            for idx in product(*map(range, shape)):
+                idx_str = "[{}]".format(",".join(map(str, idx)))
+                index.append(name + idx_str)
+                rows.append([v[idx] for v in stats_dict.values()])
+    return DataFrame(rows, columns=columns, index=index)
 
 
 def compile_pyro_model(posterior, backend, mode):
@@ -262,7 +270,7 @@ if __name__ == "__main__":
 
         with open(logpath, "a") as logfile:
             print(",time,status,exception", file=logfile, flush=True)
-            for name in (n for n in golds):
+            for name in (n for n in golds if "schools" in n):
                 # Configurations
                 posterior = my_pdb.posterior(name)
 
