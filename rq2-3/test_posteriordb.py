@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
         with open(logpath, "a") as logfile:
             print(",time,status,exception", file=logfile, flush=True)
-            for name in (n for n in golds if "schools" in n):
+            for name in (n for n in golds):
                 # Configurations
                 posterior = my_pdb.posterior(name)
 
