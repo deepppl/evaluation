@@ -223,6 +223,12 @@ if __name__ == "__main__":
     )
     parser.add_argument("--runs", type=int, default=1, help="number of runs")
 
+    parser.add_argument(
+        "--scaled",
+        help="Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1)",
+        action="store_true",
+    )
+
     # Override posteriorDB configs
     parser.add_argument("--iterations", type=int, help="number of iterations")
     parser.add_argument("--warmups", type=int, help="warmups steps")
@@ -258,7 +264,12 @@ if __name__ == "__main__":
             for name in (n for n in golds):
                 # Configurations
                 posterior = my_pdb.posterior(name)
-                config = parse_config(posterior)
+
+                if args.scaled:
+                    config = Config(iterations=10, warmups=10, chains=1, thin=1)
+                else:
+                    config = parse_config(posterior)
+
                 if args.iterations is not None:
                     config.iterations = args.iterations
                 if args.warmups is not None:
