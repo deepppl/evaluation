@@ -2,6 +2,7 @@ import time, datetime
 import os, sys, traceback, logging, argparse
 import numpy, numpyro
 import pathlib
+import re
 
 from typing import Any, Dict, IO
 from dataclasses import dataclass, field
@@ -295,10 +296,7 @@ if __name__ == "__main__":
                         )
                 except:
                     exc_type, exc_value, _ = sys.exc_info()
-                    err = (
-                        " ".join(traceback.format_exception_only(exc_type, exc_value))
-                        .replace("\n", " ")
-                        .replace("\r", "")
-                    )
+                    err = " ".join(traceback.format_exception_only(exc_type, exc_value))
+                    err = re.sub(r"[\n\r\",]", " ", err)[:150] + "..."
                     logger.error(f"Failed {name} with {err}")
                     print(f'{name},,error,"{err}"', file=logfile, flush=True)
