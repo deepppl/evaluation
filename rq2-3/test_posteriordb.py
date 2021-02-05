@@ -122,7 +122,7 @@ def run_pyro_model(*, posterior, backend, config):
             thin=config.thin,
         )
         mcmc.run(jax.random.PRNGKey(0), data)
-        return mcmc.summary()
+        return mcmc
     elif backend == "pyro":
         pyro_model = PyroModel(stanfile, recompile=False)
         mcmc = pyro_model.mcmc(
@@ -132,7 +132,7 @@ def run_pyro_model(*, posterior, backend, config):
             thin=config.thin,
         )
         mcmc.run(data)
-        return mcmc.summary()
+        return mcmc
     else:
         assert False, "Invalid backend (should be one of pyro, numpyro, or stan)"
 
@@ -152,11 +152,7 @@ def run_stan_model(*, posterior, config):
         thin=config.thin,
         chains=config.chains,
     )
-    summary = fit.summary()
-    summary = summary[~summary.index.str.endswith("__")]
-    summary = summary.rename(columns={"Mean": "mean", "StdDev": "std"})
-    return summary[["mean", "std"]]
-
+    return fit
 
 class ComparisonError(Exception):
     def __init__(self, message):
@@ -164,16 +160,24 @@ class ComparisonError(Exception):
         super().__init__(self.message)
 
 
-def compare(*, posterior, backend, mode, config):
+def compare(*, posterior, backend, mode, config, logfile):
     """
     Compare gold standard with model.
     """
     logger.info(f"Processing {posterior.name}")
     sg = gold_summary(posterior)
+    start = time.perf_counter()
     if backend == "stan":
-        sm = run_stan_model(posterior=posterior, config=config)
+        fit = run_stan_model(posterior=posterior, config=config)
+        duration = time.perf_counter() - start
+        summary = fit.summary()
+        summary = summary[~summary.index.str.endswith("__")]
+        summary = summary.rename(columns={"Mean": "mean", "StdDev": "std"})
+        sm = summary[["mean", "std"]]
     else:
-        sm = run_pyro_model(posterior=posterior, backend=backend, config=config)
+        mcmc = run_pyro_model(posterior=posterior, backend=backend, config=config)
+        duration = time.perf_counter() - start
+        sm = mcmc.summary()
     sm["err"] = abs(sm["mean"] - sg["mean"])
     sm["rel_err"] = sm["err"] / sg["std"]
     assert not sm.dropna().empty
@@ -181,38 +185,10 @@ def compare(*, posterior, backend, mode, config):
     comp = sm[(sm["err"] > 0.0001) & (sm["rel_err"] > 0.3)].dropna()
     if not comp.empty:
         logger.error(f"Failed {posterior.name}")
-        raise ComparisonError(str(comp))
+        print(f"{name},{duration},mismatch", file=logfile, flush=True)
     else:
         logger.info(f"Success {posterior.name}")
-
-
-@dataclass
-class Monitor:
-    """
-    Monitor execution and log results in a csv file.
-    - Successes log `success` and duration
-    - Comparison errors log `mismatch` and duration
-    - Failures log `error` and the exception string (no duration)
-    - !! All exception are catched (including keyboard interuptions)
-    """
-
-    name: str
-    file: IO
-
-    def __enter__(self):
-        self.start = time.perf_counter()
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        duration = time.perf_counter() - self.start
-        if exc_type == ComparisonError:
-            print(f"{name},{duration},mismatch", file=self.file, flush=True)
-            return True
-        elif not exc_type:
-            print(f"{name},{duration},success", file=self.file, flush=True)
-            return True
-        else:
-            return False
+        print(f"{name},{duration},success", file=logfile, flush=True)
 
 
 if __name__ == "__main__":
@@ -270,7 +246,7 @@ if __name__ == "__main__":
 
         with open(logpath, "a") as logfile:
             print(",time,status,exception", file=logfile, flush=True)
-            for name in (n for n in golds):
+            for name in (n for n in golds if n not in ["diamonds-diamonds", "hudson_lynx_hare-lotka_volterra"]):
                 # Configurations
                 posterior = my_pdb.posterior(name)
 
@@ -294,14 +270,14 @@ if __name__ == "__main__":
                         posterior=posterior, backend=args.backend, mode=args.mode
                     )
 
-                    # Run
-                    with Monitor(name, logfile):
-                        compare(
-                            posterior=posterior,
-                            backend=args.backend,
-                            mode=args.mode,
-                            config=config,
-                        )
+                    # Run and Compare
+                    compare(
+                        posterior=posterior,
+                        backend=args.backend,
+                        mode=args.mode,
+                        config=config,
+                        logfile=logfile
+                    )
                 except:
                     exc_type, exc_value, _ = sys.exc_info()
                     err = " ".join(traceback.format_exception_only(exc_type, exc_value))
