@@ -2,21 +2,19 @@
 
 ## Getting Started
 
-The evaluation is based on posteriordb which listed as a submodule.
-First clone the depo with its submodule and install [posteriordb](https://github.com/stan-dev/posteriordb)
-```
-git submodule init && git submodule update
-pip install ./posteriordb/python
-```
+You need to install the following dependencies:
+- [opam](https://opam.ocaml.org/): the OCaml package manager
+- [bazel](https://bazel.build/): required by tensorflow-probability
 
-You then need to install the fork of the stanc3 compiler and the runtime libraries.
-Be careful that Stanc requires version 4.07.0 of OCaml.
-Using [Opam](https://opam.ocaml.org/) (the OCaml package manager) and Pip:
-
+Stanc requires version 4.07.0 of OCaml which can be installed with:
 ```
+opam switch create 4.07.0
 opam switch 4.07.0
-opam pin -k git git+https://github.com/deepppl/stanc3.git
-pip install -r requirements.txt
+```
+
+Then simply run the following command to install all the dependencies, including the compiler.
+```
+make init
 ```
 
 ### Dockerfile
