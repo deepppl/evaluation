@@ -178,17 +178,19 @@ def compare(*, posterior, backend, mode, config, logfile):
         mcmc = run_pyro_model(posterior=posterior, backend=backend, config=config)
         duration = time.perf_counter() - start
         sm = mcmc.summary()
+    sm = sm[["mean", "std"]]
     sm["err"] = abs(sm["mean"] - sg["mean"])
     sm["rel_err"] = sm["err"] / sg["std"]
-    assert not sm.dropna().empty
+    if len(sm.dropna()) != len(sg):
+        raise RuntimeError("Missing parameter")
     # perf_cmdstan condition: err > 0.0001 and (err / stdev) > 0.3
     comp = sm[(sm["err"] > 0.0001) & (sm["rel_err"] > 0.3)].dropna()
     if not comp.empty:
         logger.error(f"Failed {posterior.name}")
-        print(f"{name},{duration},mismatch", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},mismatch", file=logfile, flush=True)
     else:
         logger.info(f"Success {posterior.name}")
-        print(f"{name},{duration},success", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},success", file=logfile, flush=True)
 
 
 if __name__ == "__main__":
@@ -245,8 +247,8 @@ if __name__ == "__main__":
         golds = [x for x in my_pdb.posterior_names() if valid_ref(my_pdb, x)]
 
         with open(logpath, "a") as logfile:
-            print(",time,status,exception", file=logfile, flush=True)
-            for name in (n for n in golds if n not in ["diamonds-diamonds", "hudson_lynx_hare-lotka_volterra"]):
+            print(",time,rel_err,status,exception", file=logfile, flush=True)
+            for name in (n for n in golds):
                 # Configurations
                 posterior = my_pdb.posterior(name)
 
@@ -283,4 +285,4 @@ if __name__ == "__main__":
                     err = " ".join(traceback.format_exception_only(exc_type, exc_value))
                     err = re.sub(r"[\n\r\",]", " ", err)[:150] + "..."
                     logger.error(f"Failed {name} with {err}")
-                    print(f'{name},,error,"{err}"', file=logfile, flush=True)
+                    print(f'{name},,,error,"{err}"', file=logfile, flush=True)
