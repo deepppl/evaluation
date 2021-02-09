@@ -172,13 +172,13 @@ def compare(*, posterior, backend, mode, config, logfile):
         duration = time.perf_counter() - start
         summary = fit.summary()
         summary = summary[~summary.index.str.endswith("__")]
-        summary = summary.rename(columns={"Mean": "mean", "StdDev": "std"})
-        sm = summary[["mean", "std"]]
+        summary = summary.rename(columns={"Mean": "mean", "StdDev": "std", "N_Eff": "n_eff"})
+        sm = summary[["mean", "std", "n_eff"]]
     else:
         mcmc = run_pyro_model(posterior=posterior, backend=backend, config=config)
         duration = time.perf_counter() - start
         sm = mcmc.summary()
-    sm = sm[["mean", "std"]]
+    sm = sm[["mean", "std", "n_eff"]]
     sm["err"] = abs(sm["mean"] - sg["mean"])
     sm["rel_err"] = sm["err"] / sg["std"]
     if len(sm.dropna()) != len(sg):
@@ -187,10 +187,10 @@ def compare(*, posterior, backend, mode, config, logfile):
     comp = sm[(sm["err"] > 0.0001) & (sm["rel_err"] > 0.3)].dropna()
     if not comp.empty:
         logger.error(f"Failed {posterior.name}")
-        print(f"{name},{duration},{sm['rel_err'].mean()},mismatch", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['rel_err'].mean()},mismatch", file=logfile, flush=True)
     else:
         logger.info(f"Success {posterior.name}")
-        print(f"{name},{duration},{sm['rel_err'].mean()},success", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['rel_err'].mean()},success", file=logfile, flush=True)
 
 
 if __name__ == "__main__":
@@ -247,7 +247,7 @@ if __name__ == "__main__":
         golds = [x for x in my_pdb.posterior_names() if valid_ref(my_pdb, x)]
 
         with open(logpath, "a") as logfile:
-            print(",time,rel_err,status,exception", file=logfile, flush=True)
+            print(",time,rel_err,n_eff,status,exception", file=logfile, flush=True)
             for name in (n for n in golds):
                 # Configurations
                 posterior = my_pdb.posterior(name)
@@ -285,4 +285,4 @@ if __name__ == "__main__":
                     err = " ".join(traceback.format_exception_only(exc_type, exc_value))
                     err = re.sub(r"[\n\r\",]", " ", err)[:150] + "..."
                     logger.error(f"Failed {name} with {err}")
-                    print(f'{name},,,error,"{err}"', file=logfile, flush=True)
+                    print(f'{name},,,,error,"{err}"', file=logfile, flush=True)
