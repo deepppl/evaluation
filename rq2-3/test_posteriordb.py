@@ -187,10 +187,10 @@ def compare(*, posterior, backend, mode, config, logfile):
     comp = sm[(sm["err"] > 0.0001) & (sm["rel_err"] > 0.3)].dropna()
     if not comp.empty:
         logger.error(f"Failed {posterior.name}")
-        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['rel_err'].mean()},mismatch", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['n_eff'].mean()},mismatch", file=logfile, flush=True)
     else:
         logger.info(f"Success {posterior.name}")
-        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['rel_err'].mean()},success", file=logfile, flush=True)
+        print(f"{name},{duration},{sm['rel_err'].mean()},{sm['n_eff'].mean()},success", file=logfile, flush=True)
 
 
 if __name__ == "__main__":
