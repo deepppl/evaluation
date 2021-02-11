@@ -1,5 +1,7 @@
 # DeepStan Evaluation: the Stan++ to (Num)Pyro compiler
 
+The fork of Stanc3 that compiles programs to (Num)Pyro is available at https://github.com/deepppl/stanc3.
+
 ## Getting Started
 
 You need to install the following dependencies:
