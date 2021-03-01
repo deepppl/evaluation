@@ -12,8 +12,8 @@ from os.path import splitext, basename
 from itertools import product
 from cmdstanpy import CmdStanModel
 
-from stannumpyro.dppl import NumPyroModel, compile
-from stanpyro.dppl import PyroModel
+from stannumpyro.dppl import NumPyroModel, compile as compile_numpyro
+from stanpyro.dppl import PyroModel, compile as compile_pyro
 import jax.random
 
 
@@ -90,7 +90,10 @@ def compile_pyro_model(posterior, backend, mode):
 
     model = posterior.model
     stanfile = model.code_file_path("stan")
-    compile(args.mode, stanfile)
+    if backend == "numpyro":
+        compile_numpyro(args.mode, stanfile)
+    else:
+        compile_pyro(args.mode, stanfile)
 
 
 def compile_stan_model(posterior):
