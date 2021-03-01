@@ -1,7 +1,7 @@
-networks { vector mlp(int[,,] imgs); }
+networks { vector mlp(real[,,] imgs); }
 data {
  int batch_size; int nx; int nh; int ny;
- int <lower=0, upper=1> imgs[28,28,batch_size];
+ real <lower=0, upper=1> imgs[28,28,batch_size];
  int <lower=1, upper=10> labels[batch_size];
 }
 parameters {

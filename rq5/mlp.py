@@ -116,7 +116,6 @@ def build_mlp():
             self.relu = torch.nn.ReLU()
 
         def forward(self, x):
-            x = x.type(torch.FloatTensor)
             h = self.relu(self.l1(x.view((-1, nx))))
             yhat = self.l2(h)
             return F.log_softmax(yhat, dim=-1)
