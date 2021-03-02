@@ -55,8 +55,8 @@ The compiler generates up to 6 functions:
 - `generated_quantities` (optional): generate one sample of the generated quantities
 - `map_generated_quantities` (optional): generated multiple samples of the generated quantities
 
-You can then use these functions to run (Num)Pyro inference algorithms.
-On the simple coin example:
+You can then use these functions to run NumPyro inference algorithms.
+On the simple schools example:
 
 ```python
 import numpyro
@@ -73,7 +73,7 @@ data = {
 
 mcmc = MCMC(NUTS(schools.model), 100, 100)
 data = schools.convert_inputs(data)
-# inputs = schools.transformed_data(data)  # Not needed for this example
+# data = schools.transformed_data(data)  # Not needed for this example
 mcmc.run(jax.random.PRNGKey(0), **data)
 samples = mcmc.get_samples()
 gen = schools.map_generated_quantities(mcmc.get_samples(), **data)
@@ -120,7 +120,7 @@ cd rq1
 ./test_example-models.sh
 ```
 
-This will generates files named `logs-$backend-$mode` where `$backend` is `pyro` or `numpyro`, and `$mode` is `generative`, `comprehensive`, or `mixed` containing the name of the compiled examples and the exit code:
+This will generates files named `logs/$backend-$mode.csv` where `$backend` is `pyro` or `numpyro`, and `$mode` is `generative`, `comprehensive`, or `mixed` containing the name of the compiled examples and the exit code:
 `0` meaning success,
 `1` meaning semantics error raised from stanc3,
 and `2` meaning compilation error due to the new backend.
@@ -133,7 +133,7 @@ For example it can run with the numpyro backend and the comprehensive compilatio
 python test_posteriordb.py  --backend numpyro --mode comprehensive
 ```
 
-This will generate a csv file `YYMMDD_HHMM_numpyro_comprehensive.csv` containing the exit code of each experiments.
+This will generate a csv file `logs/YYMMDD_HHMM_numpyro_comprehensive.csv` containing the exit code of each experiments.
 
 ### RQ2-RQ3
 

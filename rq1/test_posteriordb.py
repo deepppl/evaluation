@@ -68,8 +68,10 @@ def log(logfile, res):
 
 
 def test_all(backend, mode, config):
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
     today = datetime.datetime.now()
-    logpath = f"{today.strftime('%y%m%d_%H%M')}_{args.backend}_{args.mode}.csv"
+    logpath = f"logs/{today.strftime('%y%m%d_%H%M')}_{args.backend}_{args.mode}.csv"
     success = 0
     compile_error = 0
     inference_error = 0
