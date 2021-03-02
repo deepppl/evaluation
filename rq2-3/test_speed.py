@@ -69,12 +69,12 @@ if __name__ == "__main__":
             for name in (n for n in golds):
                 # Configurations
                 posterior = get_posterior(name)
-
+                config = parse_config(posterior)
                 if args.scaled:
-                    config = Config(iterations=10, warmups=10, chains=1, thin=1)
-                else:
-                    config = parse_config(posterior)
-
+                    config.iterations=10
+                    config.warmups=10
+                    config.chains=1
+                    config.thin=1
                 if args.iterations is not None:
                     config.iterations = args.iterations
                 if args.warmups is not None:
@@ -83,8 +83,6 @@ if __name__ == "__main__":
                     config.chains = args.chains
                 if args.thin is not None:
                     config.thin = args.thin
-
-                config.seed = random.randint(0, 1000)
 
                 try:
                     # Compile

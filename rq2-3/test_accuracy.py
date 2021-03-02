@@ -87,7 +87,10 @@ if __name__ == "__main__":
             posterior = get_posterior(name)
             config = parse_config(posterior)
             if args.scaled:
-                config = Config(iterations=100, warmups=100, chains=1, thin=1)
+                config.iterations=100
+                config.warmups=100
+                config.chains=1
+                config.thin=1
             if args.iterations is not None:
                 config.iterations = args.iterations
             if args.warmups is not None:

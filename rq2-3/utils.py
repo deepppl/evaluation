@@ -1,6 +1,6 @@
 import time, datetime
 import os, sys, traceback, logging, argparse
-import numpy, numpyro
+import numpy, numpyro, pyro
 import pathlib
 import re
 
@@ -23,6 +23,7 @@ class Config:
     warmups: int
     chains: int
     thin: int
+    seed: int
 
 
 def parse_config(posterior):
@@ -35,6 +36,7 @@ def parse_config(posterior):
         warmups=args["warmup"],
         chains=args["chains"],
         thin=args["thin"],
+        seed=args["seed"]
     )
 
 
@@ -133,9 +135,10 @@ def run_pyro_model(*, posterior, backend, mode, config):
             chains=config.chains,
             thin=config.thin,
         )
-        mcmc.run(jax.random.PRNGKey(0), data)
+        mcmc.run(jax.random.PRNGKey(config.seed), data)
         return mcmc
     elif backend == "pyro":
+        pyro.set_rng_seed(config.seed)
         pyro_model = PyroModel(stanfile, recompile=False, build_dir=build_dir)
         mcmc = pyro_model.mcmc(
             samples=config.iterations,
@@ -163,5 +166,6 @@ def run_stan_model(*, posterior, config):
         iter_sampling=config.iterations,
         thin=config.thin,
         chains=config.chains,
+        seed=config.seed
     )
     return fit
