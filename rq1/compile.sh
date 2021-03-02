@@ -2,7 +2,7 @@ backend=$1
 mode=$2
 logfile=$3
 file=$4
-name=`basename $file .stan`
+name=`basename "$file" .stan`
 mkdir -p _tmp
 echo XXX $file >> /tmp/out-$backend-$mode
 echo XXX $file >> /tmp/err-$backend-$mode
