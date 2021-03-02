@@ -141,16 +141,47 @@ To compare accuracy and speed of our backends compared to Stan you can use the `
 For example to test the numpyro backend with the comprehensive translation on all `posteriordb` examples that have a reference:
 ```
 cd rq2-3
-python test_posteriordb.py --backend numpyro --mode comprehensive
+python test_posteriordb.py --help
+
+usage: test_posteriordb.py [-h] --backend BACKEND [--mode MODE] [--runs RUNS] [--scaled] [--iterations ITERATIONS] [--warmups WARMUPS]
+                           [--chains CHAINS] [--thin THIN]
+
+Run experiments on PosteriorDB models.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --backend BACKEND     inference backend (pyro, numpyro, or stan)
+  --mode MODE           compilation mode (generative, comprehensive, mixed)
+  --runs RUNS           number of runs
+  --scaled              Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1)
+  --iterations ITERATIONS
+                        number of iterations
+  --warmups WARMUPS     warmups steps
+  --chains CHAINS       number of chains
+  --thin THIN           thinning factor
 ```
 
-This will generate a csv file `YYMMDD_HHMM_numpyro_comprehensive.csv` containing a summary of the experiments.
-:warning: A keyboard interrupt only stops one example.
+For instance, to launch 5 runs with the numpyro backend and the comprehensive translation using posteriordb configurations:
+
+```
+python test_posteriordb.py --backend numpyro --mode comprehensive --runs 5
+```
+
+This will generate 5 csv files (one per run) `YYMMDD_HHMM_numpyro_comprehensive_i.csv` containing a summary of the experiments.
 
 To run the reference Stan implementation:
 ```
 python test_posteriordb.py --backend stan
 ```
+
+:warning: Experiments with the pyro backend take a very long time (e.g., >60h for one example).
+:warning: A keyboard interrupt only stops one example.
+
+A scaled down version of the experiments can be run with the `--scaled` option.
+```
+python test_posteriordb.py --backend numpyro --mode comprehensive --scaled
+```
+
 
 The notebook `analysis.ipynb` can be used to analyse the results.
 
