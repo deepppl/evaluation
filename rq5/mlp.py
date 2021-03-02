@@ -272,6 +272,4 @@ if __name__ == "__main__":
         }
     )
 
-    print(f"KS_test (N={len(df)}):", stats.ks_2samp(df[DeepStanSVIName], df[PyroName]))
-
     make_plots(df[PyroName], df[DeepStanSVIName], f"pyro-vs-deepstan.pdf")
