@@ -256,7 +256,7 @@ if __name__ == "__main__":
                 posterior = my_pdb.posterior(name)
 
                 if args.scaled:
-                    config = Config(iterations=10, warmups=10, chains=1, thin=1)
+                    config = Config(iterations=100, warmups=100, chains=1, thin=1)
                 else:
                     config = parse_config(posterior)
 
