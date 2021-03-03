@@ -84,6 +84,9 @@ if __name__ == "__main__":
                 if args.thin is not None:
                     config.thin = args.thin
 
+                config.seed = random.randint(0, 10000)
+                print(f"Seed: {config.seed}")
+
                 try:
                     # Compile
                     compile_model(
