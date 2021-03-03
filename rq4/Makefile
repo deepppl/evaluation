@@ -1,4 +1,13 @@
-eval: multimodal_guide_model.stan multimodal_model.stan multimodal.py
+all: scaled
+
+.PHONY: eval scaled clean cleanall
+
+eval:
 	python multimodal.py
 
 scaled: eval
+
+clean:
+	rm -rf _tmp
+
+cleanall: clean
