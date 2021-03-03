@@ -184,34 +184,34 @@ if __name__ == "__main__":
     epochs = args.epochs
     lr = 0.01
     posterior_size = 100
-    # svi = pyro.infer.SVI(
-    #     model=model_hand_coded,
-    #     guide=guide_hand_coded,
-    #     optim=pyro.optim.Adam({"lr": lr}),
-    #     loss=pyro.infer.Trace_ELBO(),
-    # )
-    # for epoch in tqdm.tqdm(range(epochs)):  # loop over the dataset multiple times
-    #     for j, (imgs, lbls) in enumerate(train_loader, 0):
-    #         # calculate the loss and take a gradient step
-    #         loss = svi.step(batch_size, imgs, lbls, mlp_hand_coded)
+    svi = pyro.infer.SVI(
+        model=model_hand_coded,
+        guide=guide_hand_coded,
+        optim=pyro.optim.Adam({"lr": lr}),
+        loss=pyro.infer.Trace_ELBO(),
+    )
+    for epoch in tqdm.tqdm(range(epochs)):  # loop over the dataset multiple times
+        for j, (imgs, lbls) in enumerate(train_loader, 0):
+            # calculate the loss and take a gradient step
+            loss = svi.step(batch_size, imgs, lbls, mlp_hand_coded)
 
-    # posterior_hand_made = generate_posterior(
-    #     svi, posterior_size, (None, None, None, mlp_hand_coded)
-    # )
-    # accuracies_hand_made = []
-    # for j, data in enumerate(test_loader, 0):
-    #     images, labels = data
-    #     accuracy = (
-    #         (predict(images, posterior_hand_made) == labels).type(torch.float).mean()
-    #     )
-    #     accuracies_hand_made.append(accuracy)
-    # accuracies_hand_made = pd.Series([x.item() for x in accuracies_hand_made])
-    # print("Pyro")
-    # print(accuracies_hand_made.describe())
+    posterior_hand_made = generate_posterior(
+        svi, posterior_size, (None, None, None, mlp_hand_coded)
+    )
+    accuracies_hand_made = []
+    for j, data in enumerate(test_loader, 0):
+        images, labels = data
+        accuracy = (
+            (predict(images, posterior_hand_made) == labels).type(torch.float).mean()
+        )
+        accuracies_hand_made.append(accuracy)
+    accuracies_hand_made = pd.Series([x.item() for x in accuracies_hand_made])
+    print("Pyro")
+    print(accuracies_hand_made.describe())
 
     pyro.clear_param_store()
     mlp = build_mlp()
-    model = dppl.PyroModel(model_code, recompile=True)
+    model = dppl.PyroModel(model_code)
     svi = model.svi(
         optim=pyro.optim.Adam({"lr": lr}),
         loss=pyro.infer.Trace_ELBO(),)
@@ -245,8 +245,7 @@ if __name__ == "__main__":
         images, labels = data
         accuracy = (predict(images, posterior) == labels).type(torch.float).mean()
         accuracies.append(accuracy)
-        print('XXXXXXXX', accuracy)
-        # assert accuracy > 0.6
+        assert accuracy > 0.6
     accuracies = pd.Series([x.item() for x in accuracies])
     print("DeepStan")
     print(accuracies.describe())
