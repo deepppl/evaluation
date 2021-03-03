@@ -20,6 +20,7 @@ make init
 ```
 
 ### Dockerfile
+
 We also provide a dockerfile to setup an environment with all the dependencies.
 Build the image with (you might need to increase available memory in docker preferences):
 ```
@@ -32,72 +33,6 @@ make docker-run
 ```
 
 You can also follow the instruction of the dockerfile to install everything locally.
-
-
-### Compilation
-Let start with the simple eight schools example from Gelman et al (Bayesian Data Analysis: Sec. 5.5, 2003).
-The file `schools.stan` contains the Stan code of the model.
-To compile this example with both backend:
-```
-stanc --numpyro --o schools_numpyro.py schools.stan
-stanc --pyro --o schools_pyro.py schools.stan
-```
-The compiled code is in the files `schools_numpyro.py` and `schools_pyro.py`. 
-
-
-### Inference
-
-The compiler generates up to 6 functions:
-- `convert_inputs`: convert a dictionary of inputs to the correct names and type
-- `transformed_data` (optional): proprocess the data
-- `model`: the probabilistic model
-- `guide` (optional): the guide for variational inference
-- `generated_quantities` (optional): generate one sample of the generated quantities
-- `map_generated_quantities` (optional): generated multiple samples of the generated quantities
-
-You can then use these functions to run NumPyro inference algorithms.
-On the simple schools example:
-
-```python
-import numpyro
-from numpyro.infer import MCMC, NUTS
-from numpyro.diagnostics import print_summary
-import schools_numpyro as schools
-import jax.random
-
-data = {
-    "J": 8,
-    "y": [28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0],
-    "sigma": [15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0],
-}
-
-mcmc = MCMC(NUTS(schools.model), 100, 100)
-data = schools.convert_inputs(data)
-# data = schools.transformed_data(data)  # Not needed for this example
-mcmc.run(jax.random.PRNGKey(0), **data)
-samples = mcmc.get_samples()
-gen = schools.map_generated_quantities(mcmc.get_samples(), **data)
-samples.update(gen)
-print_summary(samples, group_by_chain=False)
-```
-
-Alternatively, we provide a simplified python interface which compiles the stan files and run the inference.
-
-```python
-from stannumpyro.dppl import NumPyroModel
-import jax.random
-
-data = {
-    "J": 8,
-    "y": [28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0],
-    "sigma": [15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0],
-}
-
-numpyro_model = NumPyroModel("schools.stan")
-mcmc = numpyro_model.mcmc(samples=100, warmups=100)
-mcmc.run(jax.random.PRNGKey(0), data)
-print(mcmc.summary())
-```
 
 ------------------------------------------------------------------
 
@@ -112,9 +47,12 @@ Then to evaluate DeepStan extensions, we consider two additional questions
 - RQ4: Are explicit variational guides useful?
 - RQ5: For deep probabilistic models, how does our extended Stan compare to hand-written Pyro code?
 
+We assuming that the current working directory is `evaluation`.
+
 ### RQ1
 
 To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh`:
+
 ```
 cd rq1
 ./test_example-models.sh
@@ -126,9 +64,11 @@ This will generates files named `logs/$backend-$mode.csv` where `$backend` is `p
 and `2` meaning compilation error due to the new backend.
 The summary of the results is printed on the standard output.
 
-This directory also contains the Python the script `test_posteriordb.py` to compile and execute one iteration of the inference on all the examples of `posteriordb`.
+To test the compilation and inference, we use the models and data of [PosteriorDB](https://github.com/stan-dev/posteriordb) that are available in the directory `posteriordb`.
+The Python the script `test_posteriordb.py` compiles and executes one iteration of the inference on all the examples of `posteriordb`.
 The script is parameterized by the backend and the compilation scheme.
 For example it can run with the numpyro backend and the comprehensive compilation scheme as follows:
+
 ```
 python test_posteriordb.py  --backend numpyro --mode comprehensive
 ```
@@ -137,14 +77,53 @@ This will generate a csv file `logs/YYMMDD_HHMM_numpyro_comprehensive.csv` conta
 
 ### RQ2-RQ3
 
-To compare accuracy and speed of our backends compared to Stan you can use the `test_posteriordb.py` script.
-For example to test the numpyro backend with the comprehensive translation on all `posteriordb` examples that have a reference:
+To compare accuracy of our backends compared to Stan you can use the `test_accuracy.py` script.
+
 ```
 cd rq2-3
-python test_posteriordb.py --help
+python test_accuracy.py --help
 
-usage: test_posteriordb.py [-h] --backend BACKEND [--mode MODE] [--runs RUNS] [--scaled] [--iterations ITERATIONS] [--warmups WARMUPS]
-                           [--chains CHAINS] [--thin THIN]
+usage: test_accuracy.py [-h] --backend BACKEND [--mode MODE] [--scaled]
+                        [--iterations ITERATIONS] [--warmups WARMUPS]
+                        [--chains CHAINS] [--thin THIN]
+
+Run accuracy experiment on PosteriorDB models.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --backend BACKEND     inference backend (pyro, numpyro, or stan)
+  --mode MODE           compilation mode (generative, comprehensive, mixed)
+  --scaled              Run scaled down experiment (iterations = 100, warmups
+                        = 100, chains = 1, thin = 1)
+  --iterations ITERATIONS
+                        number of iterations
+  --warmups WARMUPS     warmups steps
+  --chains CHAINS       number of chains
+  --thin THIN           thinning factor
+```
+
+For example to test the NumPyro backend with the comprehensive translation `posteriordb` using PosteriorDB configurations on all examples that have a reference, the command is:
+
+```
+python test_accuracy.py --backend numpyro --mode comprehensive
+```
+
+This will generate a csv file `YYMMDD_HHMM_numpyro_comprehensive_i.csv` containing a summary of the experiments.
+
+To run the reference Stan implementation:
+
+```
+python test_accuracy.py --backend stan
+```
+
+To compare speed of our backends compared to Stan you can use the `test_speed.py` script.
+
+```
+python test_speed.py --help
+
+usage: test_speed.py [-h] --backend BACKEND [--mode MODE] [--runs RUNS]
+                     [--scaled] [--iterations ITERATIONS] [--warmups WARMUPS]
+                     [--chains CHAINS] [--thin THIN]
 
 Run experiments on PosteriorDB models.
 
@@ -153,7 +132,8 @@ optional arguments:
   --backend BACKEND     inference backend (pyro, numpyro, or stan)
   --mode MODE           compilation mode (generative, comprehensive, mixed)
   --runs RUNS           number of runs
-  --scaled              Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1)
+  --scaled              Run scaled down experiment (iterations = 10, warmups =
+                        10, chains = 1, thin = 1)
   --iterations ITERATIONS
                         number of iterations
   --warmups WARMUPS     warmups steps
@@ -161,29 +141,31 @@ optional arguments:
   --thin THIN           thinning factor
 ```
 
-For instance, to launch 5 runs with the numpyro backend and the comprehensive translation using posteriordb configurations:
+For instance, to launch 5 runs with the NumPyro backend and the comprehensive translation using PosteriorDB configurations except for the seed which is picked randomly at each run, the command is:
 
 ```
-python test_posteriordb.py --backend numpyro --mode comprehensive --runs 5
+python test_speed.py --backend numpyro --mode comprehensive --runs 5
 ```
 
-This will generate 5 csv files (one per run) `YYMMDD_HHMM_numpyro_comprehensive_i.csv` containing a summary of the experiments.
+This will generate 5 csv files (one per run) `duration_numpyro_comprehensive_i_YYMMDD_HHMM.csv` containing a summary of the experiments.
 
-To run the reference Stan implementation:
-```
-python test_posteriordb.py --backend stan
-```
 
 :warning: Experiments with the pyro backend take a very long time (e.g., >60h for one example).
 :warning: A keyboard interrupt only stops one example.
 
-A scaled down version of the experiments can be run with the `--scaled` option.
+A scaled down version of the experiments can be run for both `test_accuracy.py` and `test_speed.py` with the `--scaled` option.
+
 ```
-python test_posteriordb.py --backend numpyro --mode comprehensive --scaled
+python test_accuracy.py --backend numpyro --mode comprehensive --scaled
+python test_speed.py --backend numpyro --mode comprehensive --scaled
 ```
 
 
 The notebook `analysis.ipynb` can be used to analyse the results.
+
+```
+jupyter notebook
+```
 
 ### RQ4
 
