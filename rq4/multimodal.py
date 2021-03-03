@@ -77,7 +77,7 @@ def deepstan_svi_sampler(model_code):
     optimizer = Adam({"lr": 0.005, "betas": (0.95, 0.999)})
     svi = model_guided.svi(optimizer, Trace_ELBO())
     for step in tqdm.tqdm(range(svi_steps)):
-        svi.step()
+        svi.step({})
     samples = pd.Series(
         [float(model_guided.module.guide()["theta"]) for _ in range(iterations)]
     )
