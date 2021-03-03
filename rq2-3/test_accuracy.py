@@ -1,8 +1,18 @@
 import logging, datetime, os, sys, traceback, re, argparse
 import numpyro
-from utils import gold_summary, run_stan_model, run_pyro_model, Config, parse_config, compile_model, golds, get_posterior
+from utils import (
+    gold_summary,
+    run_stan_model,
+    run_pyro_model,
+    Config,
+    parse_config,
+    compile_model,
+    golds,
+    get_posterior,
+)
 
 logger = logging.getLogger(__name__)
+
 
 class ComparisonError(Exception):
     def __init__(self, message):
@@ -20,10 +30,14 @@ def compare(*, posterior, backend, mode, config, logfile):
         fit = run_stan_model(posterior=posterior, config=config)
         summary = fit.summary()
         summary = summary[~summary.index.str.endswith("__")]
-        summary = summary.rename(columns={"Mean": "mean", "StdDev": "std", "N_Eff": "n_eff"})
+        summary = summary.rename(
+            columns={"Mean": "mean", "StdDev": "std", "N_Eff": "n_eff"}
+        )
         sm = summary[["mean", "std", "n_eff"]]
     else:
-        mcmc = run_pyro_model(posterior=posterior, backend=backend, mode=mode, config=config)
+        mcmc = run_pyro_model(
+            posterior=posterior, backend=backend, mode=mode, config=config
+        )
         sm = mcmc.summary()
     sm = sm[["mean", "std", "n_eff"]]
     sm["err"] = abs(sm["mean"] - sg["mean"])
@@ -38,6 +52,7 @@ def compare(*, posterior, backend, mode, config, logfile):
     else:
         logger.info(f"Success {posterior.name}")
         print(f"{name},success,{sm['n_eff'].mean()}", file=logfile, flush=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -87,10 +102,10 @@ if __name__ == "__main__":
             posterior = get_posterior(name)
             config = parse_config(posterior)
             if args.scaled:
-                config.iterations=100
-                config.warmups=100
-                config.chains=1
-                config.thin=1
+                config.iterations = 100
+                config.warmups = 100
+                config.chains = 1
+                config.thin = 1
             if args.iterations is not None:
                 config.iterations = args.iterations
             if args.warmups is not None:
@@ -101,16 +116,14 @@ if __name__ == "__main__":
                 config.thin = args.thin
             try:
                 # Compile
-                compile_model(
-                    posterior=posterior, backend=args.backend, mode=args.mode
-                )
+                compile_model(posterior=posterior, backend=args.backend, mode=args.mode)
                 # Run and Compare
                 compare(
                     posterior=posterior,
                     backend=args.backend,
                     mode=args.mode,
                     config=config,
-                    logfile=logfile
+                    logfile=logfile,
                 )
             except:
                 exc_type, exc_value, _ = sys.exc_info()

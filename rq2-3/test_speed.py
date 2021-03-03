@@ -1,6 +1,14 @@
 import logging, datetime, os, sys, traceback, re, time, argparse, random
 import numpyro
-from utils import run_stan_model, run_pyro_model, Config, parse_config, compile_model, golds, get_posterior
+from utils import (
+    run_stan_model,
+    run_pyro_model,
+    Config,
+    parse_config,
+    compile_model,
+    golds,
+    get_posterior,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +23,12 @@ def run(*, posterior, backend, mode, config, logfile):
         _ = run_stan_model(posterior=posterior, config=config)
         duration = time.perf_counter() - start
     else:
-        _ = run_pyro_model(posterior=posterior, backend=backend, mode=mode, config=config)
+        _ = run_pyro_model(
+            posterior=posterior, backend=backend, mode=mode, config=config
+        )
         duration = time.perf_counter() - start
     print(f"{name},{duration}", file=logfile, flush=True)
+
 
 if __name__ == "__main__":
 
@@ -71,10 +82,10 @@ if __name__ == "__main__":
                 posterior = get_posterior(name)
                 config = parse_config(posterior)
                 if args.scaled:
-                    config.iterations=10
-                    config.warmups=10
-                    config.chains=1
-                    config.thin=1
+                    config.iterations = 10
+                    config.warmups = 10
+                    config.chains = 1
+                    config.thin = 1
                 if args.iterations is not None:
                     config.iterations = args.iterations
                 if args.warmups is not None:
@@ -99,7 +110,7 @@ if __name__ == "__main__":
                         backend=args.backend,
                         mode=args.mode,
                         config=config,
-                        logfile=logfile
+                        logfile=logfile,
                     )
                 except:
                     exc_type, exc_value, _ = sys.exc_info()

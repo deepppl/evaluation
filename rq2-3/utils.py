@@ -1,8 +1,6 @@
-import time, datetime
-import os, sys, traceback, logging, argparse
+import os
 import numpy, numpyro, pyro
 import pathlib
-import re
 
 from typing import Any, Dict, IO
 from dataclasses import dataclass, field
@@ -36,7 +34,7 @@ def parse_config(posterior):
         warmups=args["warmup"],
         chains=args["chains"],
         thin=args["thin"],
-        seed=args["seed"]
+        seed=args["seed"],
     )
 
 
@@ -56,6 +54,7 @@ pdb_root = "../posteriordb"
 pdb_path = os.path.join(pdb_root, "posterior_database")
 my_pdb = PosteriorDatabase(pdb_path)
 golds = [x for x in my_pdb.posterior_names() if _valid_ref(my_pdb, x)]
+
 
 def get_posterior(name):
     return my_pdb.posterior(name)
@@ -166,6 +165,6 @@ def run_stan_model(*, posterior, config):
         iter_sampling=config.iterations,
         thin=config.thin,
         chains=config.chains,
-        seed=config.seed
+        seed=config.seed,
     )
     return fit
