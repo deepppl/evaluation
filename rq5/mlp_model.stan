@@ -11,27 +11,27 @@ parameters {
   real mlp.l2.bias[ny];
 }
 model {
-  vector[batch_size] logits;
+  vector[batch_size] lambda;
   mlp.l1.weight ~  normal(0, 1);
   mlp.l1.bias ~ normal(0, 1);
   mlp.l2.weight ~ normal(0, 1);
   mlp.l2.bias ~  normal(0, 1);
-  logits = mlp(imgs);
-  labels ~ categorical_logit(logits);
+  lambda = mlp(imgs);
+  labels ~ categorical_logit(lambda);
 }
 guide parameters {
-  real l1wloc[nh, nx];
-  real l1wscale[nh, nx];
-  real l1bloc[nh];
-  real l1bscale[nh];
-  real l2wloc[ny, nh];
-  real l2wscale[ny, nh];
-  real l2bloc[ny];
-  real l2bscale[ny];
+  real w1_mu[nh, nx];
+  real w1_sigma[nh, nx];
+  real b1_mu[nh];
+  real b1_sigma[nh];
+  real w2_mu[ny, nh];
+  real w2_sigma[ny, nh];
+  real b2_mu[ny];
+  real b2_sigma[ny];
 }
 guide {
-  mlp.l1.weight ~ normal(l1wloc, exp(l1wscale));
-  mlp.l1.bias   ~ normal(l1bloc, exp(l1bscale));
-  mlp.l2.weight ~ normal(l2wloc, exp(l2wscale));
-  mlp.l2.bias   ~ normal(l2bloc, exp(l2bscale));
+  mlp.l1.weight ~ normal(w1_mu, exp(w1_sigma));
+  mlp.l1.bias   ~ normal(b1_mu, exp(b1_sigma));
+  mlp.l2.weight ~ normal(w2_mu, exp(w2_sigma));
+  mlp.l2.bias   ~ normal(b2_mu, exp(b2_sigma));
 }
