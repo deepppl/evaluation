@@ -13,10 +13,10 @@ eval_mlp:
 	python mlp.py
 
 scaled_vae:
-	python vae.py --epochs 1
+	python vae.py -epochs 1
 
 scaled_mlp:
-	python mlp.py --epochs 1
+	python mlp.py -epochs 1
 
 clean:
 	rm -rf _tmp
