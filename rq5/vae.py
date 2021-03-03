@@ -155,9 +155,8 @@ def train_and_evaluate_deepstan(
             # calculate the loss and take a gradient step
             k = len(imgs)
             kwargs = svi.preprocess({
-              "batch_size": k, 
-              "nz":nz, 
-              "x":imgs, 
+              "nz":nz,
+              "x":imgs,
               "encoder":encoder,
               "decoder":decoder
             })
@@ -185,15 +184,15 @@ model_code = "vae_model.stan"
 def guide_pyro(*, batch_size, nz, x, encoder, decoder):
     pyro.module("encoder_pyro", encoder)
     mu, sigma = encoder(x)
-    latent = pyro.sample("latent", dist.Normal(mu, sigma, batch_size))
+    z = pyro.sample("z", dist.Normal(mu, sigma, batch_size))
 
 
 def model_pyro(*, batch_size, nz, x, encoder, decoder):
     pyro.module("decoder_pyro", decoder)
-    latent = pyro.sample(
-        "latent", dist.Normal(torch.zeros(nz), torch.ones(nz), batch_size)
+    z = pyro.sample(
+        "z", dist.Normal(torch.zeros(nz), torch.ones(nz), batch_size)
     )
-    loc_img = decoder(latent)
+    loc_img = decoder(z)
     pyro.sample("x", dist.Bernoulli(loc_img), obs=x)
 
 
