@@ -27,7 +27,13 @@ docker-build:
 	docker build -t deepstan -f deepstan.docker .
 
 clean:
-	-find example-models -name "*.py" -exec rm {} \;
+	$(MAKE) -C rq1 clean
+	$(MAKE) -C rq2-3 clean
+	$(MAKE) -C rq4 clean
+	$(MAKE) -C rq5 clean
 
 cleanall: clean
-	-rm -rf rq1/*.csv rq1/_tmp logs-*
+	$(MAKE) -C rq1 cleanall
+	$(MAKE) -C rq2-3 cleanall
+	$(MAKE) -C rq4 cleanall
+	$(MAKE) -C rq5 cleanall
