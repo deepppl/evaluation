@@ -1,3 +1,5 @@
 __pycache__
 _tmp
 src
+_build*
+_tmp

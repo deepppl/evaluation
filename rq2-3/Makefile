@@ -3,8 +3,10 @@ all: scaled
 .PHONY: eval scaled eval_accuracy eval_speed scaled_accuracy scaled_speed clean cleanall
 
 eval: eval_accuracy eval_speed
+	python results_analysis.py
 
 scaled: scaled_accuracy scaled_speed
+	python results_analysis.py
 
 eval_accuracy:
 	python test_accuracy.py --backend stan
