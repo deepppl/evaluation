@@ -33,14 +33,14 @@ def preprocess_logs(name, logdir="logs"):
     ]
 
 
-# pyro_comprehensive = preprocess_average("pyro_comprehensive")
+pyro_comprehensive = preprocess_logs("pyro_comprehensive")
 numpyro_comprehensive = preprocess_logs("numpyro_comprehensive")
 # numpyro_mixed = preprocess_logs("numpyro_mixed")
 # numpyro_generative = preprocess_logs("numpyro_generative")
 stan = preprocess_logs("stan")
 
 # mean_res = pd.concat([pyro_comprehensive, numpyro_mixed, numpyro_comprehensive, numpyro_generative, stan], axis=1)
-mean_res = pd.concat([numpyro_comprehensive, stan], axis=1)
+mean_res = pd.concat([stan, pyro_comprehensive, numpyro_comprehensive], axis=1)
 mean_res["example"] = mean_res.index.map(lambda x: x.split("-")[1])
 mean_res["data"] = mean_res.index.map(lambda x: x.split("-")[0])
 mean_res = mean_res.sort_values(by="example")
@@ -59,6 +59,7 @@ print(
             "data",
             "stan_status",
             # "stan_time",
+            "pyro_comprehensive_status",
             "numpyro_comprehensive_status",
             # "numpyro_comprehensive_time",
             # "numpyro_mixed_status",
