@@ -1,6 +1,6 @@
 import pandas as pd
 import scipy.stats
-import os
+import os, argparse
 
 
 def preprocess_logs(name, logdir="logs"):
@@ -33,51 +33,72 @@ def preprocess_logs(name, logdir="logs"):
     ]
 
 
-pyro_comprehensive = preprocess_logs("pyro_comprehensive")
-numpyro_comprehensive = preprocess_logs("numpyro_comprehensive")
-# numpyro_mixed = preprocess_logs("numpyro_mixed")
-# numpyro_generative = preprocess_logs("numpyro_generative")
-stan = preprocess_logs("stan")
+if __name__ == "__main__":
 
-# mean_res = pd.concat([pyro_comprehensive, numpyro_mixed, numpyro_comprehensive, numpyro_generative, stan], axis=1)
-mean_res = pd.concat([stan, pyro_comprehensive, numpyro_comprehensive], axis=1)
-mean_res["example"] = mean_res.index.map(lambda x: x.split("-")[1])
-mean_res["data"] = mean_res.index.map(lambda x: x.split("-")[0])
-mean_res = mean_res.sort_values(by="example")
-mean_res = mean_res[mean_res.stan_status == "success"]
+    parser = argparse.ArgumentParser(
+        description="Analyze the results of the experiments."
+    )
 
-mean_res["speedup"] = mean_res.stan_time / mean_res.numpyro_comprehensive_time
-speedups = mean_res[mean_res.numpyro_comprehensive_status == "success"]["speedup"]
-mean_res["speedup"] = speedups
+    parser.add_argument(
+        "--logdir",
+        help="directory containing the log files",
+        default="logs",
+    )
 
-print("\n--- Comparing inference results with PosteriorDB references ---\n")
+    args = parser.parse_args()
 
-print(
-    mean_res[
+    pyro_comprehensive = preprocess_logs("pyro_comprehensive", logdir=args.logdir)
+    numpyro_comprehensive = preprocess_logs("numpyro_comprehensive", logdir=args.logdir)
+    numpyro_mixed = preprocess_logs("numpyro_mixed", logdir=args.logdir)
+    numpyro_generative = preprocess_logs("numpyro_generative", logdir=args.logdir)
+    stan = preprocess_logs("stan", logdir=args.logdir)
+
+    mean_res = pd.concat(
         [
-            "example",
-            "data",
-            "stan_status",
-            # "stan_time",
-            "pyro_comprehensive_status",
-            "numpyro_comprehensive_status",
-            # "numpyro_comprehensive_time",
-            # "numpyro_mixed_status",
-            # "numpyro_mixed_time",
-            # "numpyro_generative_status",
-            # "numpyro_generative_time",
-            "speedup",
-        ]
-    ].to_markdown(index=None)
-)
+            pyro_comprehensive,
+            numpyro_mixed,
+            numpyro_comprehensive,
+            numpyro_generative,
+            stan,
+        ],
+        axis=1,
+    )
+    mean_res["example"] = mean_res.index.map(lambda x: x.split("-")[1])
+    mean_res["data"] = mean_res.index.map(lambda x: x.split("-")[0])
+    mean_res = mean_res.sort_values(by="example")
+    mean_res = mean_res[mean_res.stan_status == "success"]
 
+    mean_res["speedup"] = mean_res.stan_time / mean_res.numpyro_comprehensive_time
+    speedups = mean_res[mean_res.numpyro_comprehensive_status == "success"]["speedup"]
+    mean_res["speedup"] = speedups
 
-print("\n--- Summary ---\n")
+    print("\n--- Comparing inference results with PosteriorDB references ---\n")
 
-print(f"Total benchs: {len(stan)}")
-print(f"Stan successes: {len(stan[stan.stan_status == 'success'])}")
-mean_res = mean_res[mean_res.stan_status == "success"]
-print(f"Valid speedup: {len(mean_res['speedup'].dropna())}")
-print(f"Average speedup: {scipy.stats.gmean(mean_res.speedup.dropna())}")
+    print(
+        mean_res[
+            [
+                "example",
+                "data",
+                "stan_status",
+                "stan_time",
+                "pyro_comprehensive_status",
+                "numpyro_comprehensive_status",
+                "numpyro_comprehensive_time",
+                "numpyro_mixed_status",
+                "numpyro_mixed_time",
+                "numpyro_generative_status",
+                "numpyro_generative_time",
+                "speedup",
+            ]
+        ].to_markdown(index=None)
+    )
 
-print("\n------\n")
+    print("\n--- Summary ---\n")
+
+    print(f"Total benchs: {len(stan)}")
+    print(f"Stan successes: {len(stan[stan.stan_status == 'success'])}")
+    mean_res = mean_res[mean_res.stan_status == "success"]
+    print(f"Valid speedup: {len(mean_res['speedup'].dropna())}")
+    print(f"Average speedup: {scipy.stats.gmean(mean_res.speedup.dropna())}")
+
+    print("\n------\n")

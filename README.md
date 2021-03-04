@@ -160,11 +160,10 @@ python test_accuracy.py --backend numpyro --mode comprehensive --scaled
 python test_speed.py --backend numpyro --mode comprehensive --scaled
 ```
 
-
-The notebook `analysis.ipynb` can be used to analyse the results.
+The script `results_analysis.py` can be used analyse the results.
 
 ```
-jupyter notebook
+python results_analysis.py
 ```
 
 ### RQ4
