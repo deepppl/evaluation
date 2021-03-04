@@ -108,7 +108,7 @@ For example to test the NumPyro backend with the comprehensive translation `post
 python test_accuracy.py --backend numpyro --mode comprehensive
 ```
 
-This will generate a csv file `YYMMDD_HHMM_numpyro_comprehensive_i.csv` containing a summary of the experiments.
+This will generate a csv file `status_numpyro_comprehensive_YYMMDD_HHMMSS.csv` containing a summary of the experiments.
 
 To run the reference Stan implementation:
 
@@ -147,7 +147,7 @@ For instance, to launch 5 runs with the NumPyro backend and the comprehensive tr
 python test_speed.py --backend numpyro --mode comprehensive --runs 5
 ```
 
-This will generate 5 csv files (one per run) `duration_numpyro_comprehensive_i_YYMMDD_HHMM.csv` containing a summary of the experiments.
+This will generate 5 csv files (one per run) `duration_numpyro_comprehensive_i_YYMMDD_HHMMSS.csv` containing a summary of the experiments.
 
 
 :warning: Experiments with the pyro backend take a very long time (e.g., >60h for one example).
