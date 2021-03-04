@@ -22,7 +22,7 @@ import jax.random
 import time
 
 num_chains = 1
-iterations = 9000
+iterations = 10000
 warmup = 500
 svi_steps = 70000
 
@@ -46,7 +46,7 @@ model_code_guided = "multimodal_guide_model.stan"
 
 def deepstan_sampler(model_code):
     model = NumPyroModel(model_code)
-    mcmc = model.mcmc(iterations // num_chains + warmup, warmup, num_chains)
+    mcmc = model.mcmc(iterations // num_chains, warmup, num_chains)
     mcmc.run(jax.random.PRNGKey(0), {})
     samples = pd.Series(mcmc.get_samples()["theta"], name=r"$\theta$")
     return samples
@@ -55,7 +55,7 @@ def deepstan_sampler(model_code):
 def stan_sampler(model_code):
     sm = CmdStanModel(stan_file=model_code)
     fit = sm.sample(
-        iter_sampling=iterations // num_chains + warmup,
+        iter_sampling=iterations // num_chains,
         iter_warmup=warmup,
         chains=num_chains,
     )
