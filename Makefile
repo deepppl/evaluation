@@ -1,5 +1,12 @@
 all:
-	head -n 18 README.md
+	@echo "Help:"
+	@echo "  make init         # install the dependencies"
+	@echo "  make eval         # run the full evaluation"
+	@echo "  make scaled       # run a lighter version of the evaluation"
+	@echo "  make docker-build # build a docker image"
+	@echo "  make docker-run   # run the docker image"
+	@echo "  make clean        # remove the generated files excpet the logs"
+	@echo "  make cleanall     # remove all the generated files"
 
 init:
 	git submodule init && git submodule update
