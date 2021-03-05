@@ -26,12 +26,11 @@ scaled:
 	$(MAKE) -C rq4 scaled
 	$(MAKE) -C rq5 scaled
 
+docker-build:
+	docker build -t deepstan -f deepstan.docker .
 
 docker-run:
 	docker run -ti --rm deepstan bash
-
-docker-build:
-	docker build -t deepstan -f deepstan.docker .
 
 clean:
 	$(MAKE) -C rq1 clean
