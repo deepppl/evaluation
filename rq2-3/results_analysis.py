@@ -12,10 +12,11 @@ def preprocess_logs(name, logdir="logs"):
         df.columns = [f"{name}_{i}_{x}" for x in df.columns]
         dfs.append(df)
 
-    status_file = next(f for f in os.listdir(logdir) if f"status_{name}_" in f)
-    df = pd.read_csv(f"{logdir}/{status_file}", index_col=0)
-    df.columns = [f"{name}_{x}" for x in df.columns]
-    dfs.append(df)
+    status_file = next((f for f in os.listdir(logdir) if f"status_{name}_" in f), None)
+    if status_file:
+        df = pd.read_csv(f"{logdir}/{status_file}", index_col=0)
+        df.columns = [f"{name}_{x}" for x in df.columns]
+        dfs.append(df)
 
     df = pd.concat(dfs, axis=1)
     df[f"{name}_time"] = df[[f"{name}_{i}_time" for i in range(n)]].mean(axis=1)
@@ -45,13 +46,25 @@ if __name__ == "__main__":
         default="logs",
     )
 
+    parser.add_argument(
+        "--scaled",
+        help="Exclude Pyro",
+        action="store_true",
+    )
+
     args = parser.parse_args()
 
-    pyro_comprehensive = preprocess_logs("pyro_comprehensive", logdir=args.logdir)
     numpyro_comprehensive = preprocess_logs("numpyro_comprehensive", logdir=args.logdir)
     numpyro_mixed = preprocess_logs("numpyro_mixed", logdir=args.logdir)
     numpyro_generative = preprocess_logs("numpyro_generative", logdir=args.logdir)
     stan = preprocess_logs("stan", logdir=args.logdir)
+
+    if args.scaled:
+        pyro_comprehensive = pd.DataFrame(
+            columns=["pyro_comprehensive_status"], index=stan.index
+        )  # Empty
+    else:
+        pyro_comprehensive = preprocess_logs("pyro_comprehensive", logdir=args.logdir)
 
     mean_res = pd.concat(
         [

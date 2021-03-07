@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--scaled",
-        help="Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1)",
+        help="Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1, runs = 1)",
         action="store_true",
     )
 
@@ -60,6 +60,9 @@ if __name__ == "__main__":
     parser.add_argument("--thin", type=int, help="thinning factor")
 
     args = parser.parse_args()
+
+    if args.scaled:
+        args.runs = 1
 
     logging.basicConfig(level=logging.INFO)
 
