@@ -144,6 +144,7 @@ def run_pyro_model(*, posterior, backend, mode, config):
             warmups=config.warmups,
             chains=config.chains,
             thin=config.thin,
+            mp_context="spawn"
         )
         mcmc.run(data)
         return mcmc
