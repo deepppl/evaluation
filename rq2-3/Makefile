@@ -6,7 +6,7 @@ eval: eval_accuracy eval_speed
 	python results_analysis.py
 
 scaled: scaled_accuracy scaled_speed
-	python results_analysis.py
+	python results_analysis.py --scaled
 
 eval_accuracy:
 	python test_accuracy.py --backend stan
