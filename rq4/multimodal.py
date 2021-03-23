@@ -29,7 +29,7 @@ svi_steps = 70000
 StanName = "Stan(NUTS)"
 StanADVIName = "Stan(ADVI)"
 DeepStanName = "DeepStan(NUTS)"
-DeepStanSVIName = "DeepStan(SVI)"
+DeepStanSVIName = "DeepStan(VI)"
 
 sns.set_style("white")
 sns.set_context("paper", font_scale=2.5)
@@ -47,7 +47,7 @@ model_code_guided = "multimodal_guide_model.stan"
 def deepstan_sampler(model_code):
     model = NumPyroModel(model_code)
     mcmc = model.mcmc(iterations // num_chains, warmup, num_chains)
-    mcmc.run(jax.random.PRNGKey(0), {})
+    mcmc.run(jax.random.PRNGKey(11), {})
     samples = pd.Series(mcmc.get_samples()["theta"], name=r"$\theta$")
     return samples
 
@@ -84,10 +84,11 @@ def deepstan_svi_sampler(model_code):
     return samples
 
 
-def make_plots(left, right, path, ticks=None, xlim=None):
+def make_plots(left, right, path, ticks=None, xlim=None, ylim=None):
     plt.hist(
         left,
-        bins=50,
+        range=xlim,
+        bins=100,
         histtype="stepfilled",
         alpha=0.8,
         label=left.name,
@@ -95,7 +96,8 @@ def make_plots(left, right, path, ticks=None, xlim=None):
     )
     plt.hist(
         right,
-        bins=50,
+        range=xlim,
+        bins=100,
         histtype="stepfilled",
         alpha=0.75,
         label=right.name,
@@ -108,8 +110,8 @@ def make_plots(left, right, path, ticks=None, xlim=None):
             plt.xlabel("")
     if xlim:
         plt.xlim(xlim)
-    if xlim:
-        plt.xlim(xlim)
+    if ylim:
+        plt.ylim(ylim)
     plt.legend(fontsize="x-small", loc="upper center")
     ax = plt.gca()
     ax.set_aspect(10 / 1000)
@@ -133,17 +135,20 @@ if __name__ == "__main__":
     )
     print(df[[StanName, DeepStanName, DeepStanSVIName, StanADVIName]].describe())
     make_plots(
-        df[DeepStanSVIName], df[StanName], f"stan-vs-deepstansvi.pdf", xlim=[-5, 24]
+        df[StanName],
+        df[DeepStanSVIName],
+        f"stan-vs-deepstansvi.pdf",
+        xlim=[-5, 24], ylim=[0, 1200],
     )
     make_plots(
-        df[DeepStanSVIName],
         df[DeepStanName],
+        df[DeepStanSVIName],
         f"deepstan-vs-deepstansvi.pdf",
-        xlim=[-5, 24],
+        xlim=[-5, 24], ylim=[0, 1200],
     )
     make_plots(
         df[DeepStanSVIName],
         df[StanADVIName],
         f"deepstansvi-vs-stanadvi.pdf",
-        xlim=[-5, 24],
+        xlim=[-5, 24], ylim=[0, 1200],
     )
