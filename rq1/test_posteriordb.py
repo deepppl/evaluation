@@ -136,3 +136,5 @@ if __name__ == "__main__":
     print("Summary")
     print("-------")
     print(f"{args.backend} {args.mode}: {res}")
+    with open("logs/summary.log", "a") as file:
+        print(f"posteriordb {args.backend}-{args.mode}: {res}", file=file, flush=True)
