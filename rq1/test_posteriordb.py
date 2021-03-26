@@ -67,7 +67,7 @@ def log(logfile, res):
     print(f"{test}, {code}, {exn}", file=logfile, flush=True)
 
 
-def test_all(backend, mode, config):
+def test_all(posteriors, backend, mode, config):
     if not os.path.exists("logs"):
         os.makedirs("logs")
     today = datetime.datetime.now()
@@ -77,7 +77,7 @@ def test_all(backend, mode, config):
     inference_error = 0
     with open(logpath, "a") as logfile:
         print("test,exit code,exn", file=logfile, flush=True)
-        for name in my_pdb.posterior_names():
+        for name in posteriors:
             print(f"- Test {backend} {mode}: {name}")
             posterior = my_pdb.posterior(name)
             res = test(posterior, config, backend, mode)
@@ -114,6 +114,7 @@ if __name__ == "__main__":
         help="compilation mode (generative, comprehensive, mixed)",
         default="mixed",
     )
+    parser.add_argument("--posteriors", nargs="+", help="select the examples to execute")
     parser.add_argument("--iterations", type=int, help="number of iterations")
     parser.add_argument("--warmups", type=int, help="warmups steps")
     parser.add_argument("--chains", type=int, help="number of chains")
@@ -131,7 +132,12 @@ if __name__ == "__main__":
     if args.thin is not None:
         config.thin = args.thin
 
-    res = test_all(args.backend, args.mode, config)
+    if args.posteriors:
+        posteriors = args.posteriors
+    else:
+        posteriors = my_pdb.posterior_names()
+
+    res = test_all(posteriors, args.backend, args.mode, config)
 
     print("Summary")
     print("-------")
