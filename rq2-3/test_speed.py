@@ -53,7 +53,7 @@ if __name__ == "__main__":
         action="store_true",
     )
 
-    parser.add_argument("--posteriors", nargs="+")
+    parser.add_argument("--posteriors", nargs="+", help="select the examples to execute")
 
     # Override posteriorDB configs
     parser.add_argument("--iterations", type=int, help="number of iterations")

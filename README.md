@@ -51,18 +51,18 @@ We assuming that the current working directory is `evaluation`.
 
 ### RQ1
 
-To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh`:
+To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh` and specifying the backend `$backend` (`pyro` or `numpyro`) and the compilation mode `$mode` (`generative`, `comprehensive`, or `mixed`):
 
 ```
 cd rq1
-./test_example-models.sh
+./test_example-models.sh $backend $mode
 ```
 
-This will generates files named `logs/$backend-$mode.csv` where `$backend` is `pyro` or `numpyro`, and `$mode` is `generative`, `comprehensive`, or `mixed` containing the name of the compiled examples and the exit code:
+This will generates files named `logs/$backend-$mode.csv` containing the name of the compiled examples and the exit code:
 `0` meaning success,
 `1` meaning semantics error raised from stanc3,
 and `2` meaning compilation error due to the new backend.
-The summary of the results is printed on the standard output.
+The summary of the results is printed on the standard output and add it to the file `logs/summay.log`.
 
 To test the compilation and inference, we use the models and data of [PosteriorDB](https://github.com/stan-dev/posteriordb) that are available in the directory `posteriordb`.
 The Python the script `test_posteriordb.py` compiles and executes one iteration of the inference on all the examples of `posteriordb`.
@@ -73,7 +73,13 @@ For example it can run with the numpyro backend and the comprehensive compilatio
 python test_posteriordb.py  --backend numpyro --mode comprehensive
 ```
 
-This will generate a csv file `logs/YYMMDD_HHMM_numpyro_comprehensive.csv` containing the exit code of each experiments.
+This will generate a csv file `logs/YYMMDD_HHMM_numpyro_comprehensive.csv` containing the exit code of each experiments and add a summary in `logs/summay.log`.
+
+The summary of all the experiments can be display with:
+
+```
+cat logs/summay.log
+```
 
 ### RQ2-RQ3
 
@@ -95,6 +101,8 @@ optional arguments:
   --mode MODE           compilation mode (generative, comprehensive, mixed)
   --scaled              Run scaled down experiment (iterations = 100, warmups
                         = 100, chains = 1, thin = 1)
+  --posteriors POSTERIORS [POSTERIORS ...]
+                        select the examples to execute
   --iterations ITERATIONS
                         number of iterations
   --warmups WARMUPS     warmups steps
@@ -134,6 +142,8 @@ optional arguments:
   --runs RUNS           number of runs
   --scaled              Run scaled down experiment (iterations = 10, warmups =
                         10, chains = 1, thin = 1)
+  --posteriors POSTERIORS [POSTERIORS ...]
+                        select the examples to execute
   --iterations ITERATIONS
                         number of iterations
   --warmups WARMUPS     warmups steps
@@ -159,6 +169,15 @@ A scaled down version of the experiments can be run for both `test_accuracy.py` 
 python test_accuracy.py --backend numpyro --mode comprehensive --scaled
 python test_speed.py --backend numpyro --mode comprehensive --scaled
 ```
+
+The option `--posterior` a select the examples to execute for both `test_accuracy.py` and `test_speed.py`.
+E.g.,
+
+```
+python test_accuracy.py --backend numpyro --scaled --posterior nes1976-nes earnings-earn_height
+python test_speed.py --backend numpyro --scaled --posterior nes1976-nes earnings-earn_height
+```
+
 
 The script `results_analysis.py` can be used analyse the results.
 
