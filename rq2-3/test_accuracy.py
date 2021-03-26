@@ -75,6 +75,8 @@ if __name__ == "__main__":
         action="store_true",
     )
 
+    parser.add_argument("--posteriors", nargs="+")
+
     # Override posteriorDB configs
     parser.add_argument("--iterations", type=int, help="number of iterations")
     parser.add_argument("--warmups", type=int, help="warmups steps")
@@ -82,6 +84,9 @@ if __name__ == "__main__":
     parser.add_argument("--thin", type=int, help="thinning factor")
 
     args = parser.parse_args()
+
+    if args.posteriors:
+        golds = args.posteriors
 
     logging.basicConfig(level=logging.INFO)
 
