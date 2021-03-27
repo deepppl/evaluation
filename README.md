@@ -47,18 +47,19 @@ Then to evaluate DeepStan extensions, we consider two additional questions
 - RQ4: Are explicit variational guides useful?
 - RQ5: For deep probabilistic models, how does our extended Stan compare to hand-written Pyro code?
 
-We assuming that the current working directory is `evaluation`.
+We assume that the current working directory is `evaluation`.
 
 ### RQ1
 
-To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh` and specifying the backend `$backend` (`pyro` or `numpyro`) and the compilation mode `$mode` (`generative`, `comprehensive`, or `mixed`):
+To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh`.
+The script expects two arguments: the backend (`pyro` or `numpyro`), and the compilation mode (`generative`, `comprehensive`, or `mixed`).
 
 ```
 cd rq1
-./test_example-models.sh $backend $mode
+./test_example-models.sh pyro comprehensive
 ```
 
-This will generates files named `logs/$backend-$mode.csv` containing the name of the compiled examples and the exit code:
+This command generates a file named `logs/pyro-comprehensive.csv` containing the name of the compiled examples and the exit code:
 `0` meaning success,
 `1` meaning semantics error raised from stanc3,
 and `2` meaning compilation error due to the new backend.
@@ -83,7 +84,7 @@ cat logs/summay.log
 
 ### RQ2-RQ3
 
-To compare accuracy of our backends compared to Stan you can use the `test_accuracy.py` script.
+To compare accuracy of our backends with Stan, you can use the `test_accuracy.py` script.
 
 ```
 cd rq2-3
@@ -110,7 +111,7 @@ optional arguments:
   --thin THIN           thinning factor
 ```
 
-For example to test the NumPyro backend with the comprehensive translation `posteriordb` using PosteriorDB configurations on all examples that have a reference, the command is:
+For instance, to test the NumPyro backend with the comprehensive translation using PosteriorDB configurations on all examples that have a reference, the command is:
 
 ```
 python test_accuracy.py --backend numpyro --mode comprehensive
@@ -124,7 +125,7 @@ To run the reference Stan implementation:
 python test_accuracy.py --backend stan
 ```
 
-To compare speed of our backends compared to Stan you can use the `test_speed.py` script.
+To compare the speed of our backends with Stan, you can use the `test_speed.py` script.
 
 ```
 python test_speed.py --help
@@ -161,6 +162,7 @@ This will generate 5 csv files (one per run) `duration_numpyro_comprehensive_i_Y
 
 
 :warning: Experiments with the pyro backend take a very long time (e.g., >60h for one example).
+
 :warning: A keyboard interrupt only stops one example.
 
 A scaled down version of the experiments can be run for both `test_accuracy.py` and `test_speed.py` with the `--scaled` option.
@@ -179,7 +181,8 @@ python test_speed.py --backend numpyro --scaled --posterior nes1976-nes earnings
 ```
 
 
-The script `results_analysis.py` can be used analyse the results.
+The script `results_analysis.py` can be used to analyze the results.
+Option `--logdir` specifies the repository containing the log files (default `./logs`).
 
 ```
 python results_analysis.py
