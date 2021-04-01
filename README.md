@@ -177,8 +177,8 @@ The example must be one of the [posterior with reference draws](https://github.c
 E.g.,
 
 ```
-python test_accuracy.py --backend numpyro --scaled --posterior nes1976-nes earnings-earn_height
-python test_speed.py --backend numpyro --scaled --posterior nes1976-nes earnings-earn_height
+python test_accuracy.py --backend numpyro --posterior nes1976-nes earnings-earn_height
+python test_speed.py --backend numpyro --posterior nes1976-nes earnings-earn_height
 ```
 
 
