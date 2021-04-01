@@ -1,6 +1,11 @@
-all: scaled
+all:
+	@echo "Help:"
+	@echo "  make eval       # run the full evaluation"
+	@echo "  make scaled     # same as eval"
+	@echo "  make clean      # remove the compiled files"
+	@echo "  make cleanall   # remove the compiled files and output files"
 
-.PHONY: eval scaled clean cleanall
+.PHONY: all eval scaled clean cleanall
 
 eval:
 	python multimodal.py
