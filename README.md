@@ -173,6 +173,7 @@ python test_speed.py --backend numpyro --mode comprehensive --scaled
 ```
 
 The option `--posterior` a select the examples to execute for both `test_accuracy.py` and `test_speed.py`.
+The example must be one of the [posterior with reference draws](https://github.com/stan-dev/posteriordb/tree/master/posterior_database/reference_posteriors/summary_statistics/mean/info).
 E.g.,
 
 ```
