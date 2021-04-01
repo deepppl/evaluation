@@ -132,10 +132,10 @@ if __name__ == "__main__":
     if args.thin is not None:
         config.thin = args.thin
 
+    posteriors = my_pdb.posterior_names()
     if args.posteriors:
+        assert all(p in posteriors for p in args.posteriors), "Bad posterior name"
         posteriors = args.posteriors
-    else:
-        posteriors = my_pdb.posterior_names()
 
     res = test_all(posteriors, args.backend, args.mode, config)
 

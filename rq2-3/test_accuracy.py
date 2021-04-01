@@ -86,6 +86,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.posteriors:
+        assert all(p in golds for p in args.posteriors), "Bad posterior name"
         golds = args.posteriors
 
     logging.basicConfig(level=logging.INFO)
