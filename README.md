@@ -90,7 +90,7 @@ To compare accuracy of our backends with Stan, you can use the `test_accuracy.py
 cd rq2-3
 python test_accuracy.py --help
 
-usage: test_accuracy.py [-h] --backend BACKEND [--mode MODE] [--scaled]
+usage: test_accuracy.py [-h] --backend BACKEND [--mode MODE] [--test]
                         [--iterations ITERATIONS] [--warmups WARMUPS]
                         [--chains CHAINS] [--thin THIN]
 
@@ -100,7 +100,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --backend BACKEND     inference backend (pyro, numpyro, or stan)
   --mode MODE           compilation mode (generative, comprehensive, mixed)
-  --scaled              Run scaled down experiment (iterations = 100, warmups
+  --test                Run test experiment (iterations = 100, warmups
                         = 100, chains = 1, thin = 1)
   --posteriors POSTERIORS [POSTERIORS ...]
                         select the examples to execute
@@ -131,7 +131,7 @@ To compare the speed of our backends with Stan, you can use the `test_speed.py` 
 python test_speed.py --help
 
 usage: test_speed.py [-h] --backend BACKEND [--mode MODE] [--runs RUNS]
-                     [--scaled] [--iterations ITERATIONS] [--warmups WARMUPS]
+                     [--test] [--iterations ITERATIONS] [--warmups WARMUPS]
                      [--chains CHAINS] [--thin THIN]
 
 Run experiments on PosteriorDB models.
@@ -141,7 +141,7 @@ optional arguments:
   --backend BACKEND     inference backend (pyro, numpyro, or stan)
   --mode MODE           compilation mode (generative, comprehensive, mixed)
   --runs RUNS           number of runs
-  --scaled              Run scaled down experiment (iterations = 10, warmups =
+  --test                Run test experiment (iterations = 10, warmups =
                         10, chains = 1, thin = 1)
   --posteriors POSTERIORS [POSTERIORS ...]
                         select the examples to execute
@@ -165,7 +165,9 @@ This will generate 5 csv files (one per run) `duration_numpyro_comprehensive_i_Y
 
 :warning: A keyboard interrupt only stops one example.
 
-A scaled down version of the experiments can be run for both `test_accuracy.py` and `test_speed.py` with the `--scaled` option.
+A test version of the experiments can be run for both `test_accuracy.py` and `test_speed.py` with the `--test` option to verify the scripts on the entire set of examples with very few iterations. 
+
+:warning: Accuracy and speed results computed with this option are not meaningful.
 
 ```
 python test_accuracy.py --backend numpyro --mode comprehensive --scaled
@@ -188,6 +190,8 @@ Option `--logdir` specifies the repository containing the log files (default `./
 ```
 python results_analysis.py
 ```
+
+Option `--nopyro` can be used to ignore Pyro results (e.g., after running `make scaled` which does not run the Pyro experiment).
 
 ### RQ4
 

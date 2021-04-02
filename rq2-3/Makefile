@@ -15,7 +15,7 @@ eval: eval_accuracy eval_speed
 	python results_analysis.py
 
 scaled: scaled_accuracy scaled_speed
-	python results_analysis.py --scaled
+	python results_analysis.py --nopyro
 
 eval_accuracy:
 	python test_accuracy.py --backend stan
@@ -32,24 +32,24 @@ eval_speed:
 	python test_speed.py --backend numpyro --mode generative
 
 scaled_accuracy:
-	python test_accuracy.py --backend stan \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_accuracy.py --backend numpyro --mode comprehensive \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_accuracy.py --backend numpyro --mode mixed \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_accuracy.py --backend numpyro --mode generative \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
+	python test_accuracy.py --backend stan --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
+	python test_accuracy.py --backend numpyro --mode comprehensive --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
+	python test_accuracy.py --backend numpyro --mode mixed --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
+	python test_accuracy.py --backend numpyro --mode generative --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
 
 scaled_speed:
-	python test_speed.py --backend stan \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_speed.py --backend numpyro --mode comprehensive \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_speed.py --backend numpyro --mode mixed \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
-	python test_speed.py --backend numpyro --mode generative \
-		--posterior earnings-earn_height kidiq-kidscore_interaction
+	python test_speed.py --backend stan --runs 1 --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+	python test_speed.py --backend numpyro --mode comprehensive --runs 1 --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+	python test_speed.py --backend numpyro --mode mixed --runs 1 --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+	python test_speed.py --backend numpyro --mode generative --runs 1 --chains 2 \
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
 
 clean:
 	rm -rf _tmp __pycache__ _build_*

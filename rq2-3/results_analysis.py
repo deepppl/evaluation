@@ -47,7 +47,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--scaled",
+        "--nopyro",
         help="Exclude Pyro",
         action="store_true",
     )
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     numpyro_generative = preprocess_logs("numpyro_generative", logdir=args.logdir)
     stan = preprocess_logs("stan", logdir=args.logdir)
 
-    if args.scaled:
+    if args.nopyro:
         pyro_comprehensive = pd.DataFrame(
             columns=["pyro_comprehensive_status"], index=stan.index
         )  # Empty
