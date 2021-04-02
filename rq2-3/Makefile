@@ -43,13 +43,13 @@ scaled_accuracy:
 
 scaled_speed:
 	python test_speed.py --backend stan --runs 1 --chains 2 \
-		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
 	python test_speed.py --backend numpyro --mode comprehensive --runs 1 --chains 2 \
-		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
 	python test_speed.py --backend numpyro --mode mixed --runs 1 --chains 2 \
-		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
 	python test_speed.py --backend numpyro --mode generative --runs 1 --chains 2 \
-		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered
+		--posterior earnings-earn_height kidiq-kidscore_interaction nes1976-nes eight_schools-eight_schools_noncentered mesquite-mesquite
 
 clean:
 	rm -rf _tmp __pycache__ _build_*
