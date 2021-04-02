@@ -48,8 +48,8 @@ if __name__ == "__main__":
     parser.add_argument("--runs", type=int, default=5, help="number of runs")
 
     parser.add_argument(
-        "--scaled",
-        help="Run scaled down experiment (iterations = 10, warmups = 10, chains = 1, thin = 1, runs = 1)",
+        "--test",
+        help="Run test experiment (iterations = 10, warmups = 10, chains = 1, thin = 1, runs = 1)",
         action="store_true",
     )
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.scaled:
+    if args.test:
         args.runs = 1
 
     if args.posteriors:
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 # Configurations
                 posterior = get_posterior(name)
                 config = parse_config(posterior)
-                if args.scaled:
+                if args.test:
                     config.iterations = 10
                     config.warmups = 10
                     config.chains = 1
