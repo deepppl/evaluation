@@ -49,6 +49,33 @@ Then to evaluate DeepStan extensions, we consider two additional questions
 
 We assume that the current working directory is `evaluation`.
 
+The code is organized by research questions in the `evaluation/rq*` directories.
+Each directory contains a makefile with a rule `eval` that launches the experiments.
+
+```
+make eval
+```
+
+:warning: Some experiments take hours to complete.
+Executing the command directly in the evaluation directory will take a few days.
+
+Each makefile also contains a rule `scaled` to run a faster and lighter version of a subset of the experiments.
+In particular, not all the backends and compilation scheme are executed, the number of chains for the inference is reduced, and some examples are not executed. But all the different test scripts are executed.
+
+```
+make scaled
+```
+
+On a MacBook Pro (2020), 2.3 GHz Quad-Core Intel Core i7, 32GB of memory we have the following durations:
+- RQ1: 26m52s `make -C rq1 scaled`
+- RQ2: 20m33s `make -C rq2-3 scaled_accuracy`
+- RQ3: 16m11s `make -C rq2-3 scaled_speed`
+- RQ4: 2m41s `make -C rq4 scaled`
+- RQ5: 2m23s `make -C rq5 scaled`
+- Total: 92m53s `make scaled`
+
+We detail below how to run the tests individually and how to interpret the results.
+
 ### RQ1
 
 To compile all the examples of `example-models` from https://github.com/stan-dev/example-models, you can use the bash script `test_example-models.sh`.
@@ -170,8 +197,8 @@ A test version of the experiments can be run for both `test_accuracy.py` and `te
 :warning: Accuracy and speed results computed with this option are not meaningful.
 
 ```
-python test_accuracy.py --backend numpyro --mode comprehensive --scaled
-python test_speed.py --backend numpyro --mode comprehensive --scaled
+python test_accuracy.py --backend numpyro --mode comprehensive --test
+python test_speed.py --backend numpyro --mode comprehensive --test
 ```
 
 The option `--posterior` can be used to select a subset of examples to execute for both `test_accuracy.py` and `test_speed.py`.
